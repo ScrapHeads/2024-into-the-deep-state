@@ -303,7 +303,7 @@ public final class Drivetrain implements Subsystem {
         p.put("odo y", pos.getY(DistanceUnit.INCH));
         p.put("odo heading (deg)", Math.toDegrees(odo.getHeading()));
 
-        dashboard.sendTelemetryPacket(p);
+//        dashboard.sendTelemetryPacket(p);
     }
 
     public final class FollowTrajectoryAction implements Action {
@@ -388,7 +388,7 @@ public final class Drivetrain implements Subsystem {
             p.put("yError", error.position.y);
             p.put("headingError (deg)", Math.toDegrees(error.heading.toDouble()));
 
-            dashboard.sendTelemetryPacket(p);
+//            dashboard.sendTelemetryPacket(p);
 
             // only draw when active; only one drive action should be active at a time
             Canvas c = p.fieldOverlay();

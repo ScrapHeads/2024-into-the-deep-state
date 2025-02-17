@@ -14,27 +14,25 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 import java.util.function.Supplier;
 
 public class ArmLiftIntake implements Subsystem {
-    private static final double ticksToInches = -114.25;
+    private static final double ticksToInches = 31;
 
+    //TODO Not Tuned; Tune
     private final PIDController pidController = new PIDController(0.3, 0, 0);
 
     //Designating the armLift variable to be set in the Arm function
     private final MotorEx armLiftIntake;
+    private final MotorEx armLiftIntake2;
+
     private Supplier<Rotation2d> rotSupplier;
 
-    private final DigitalChannel touchSensor;
+    private final DigitalChannel magneticSensor;
 
     public enum controlState {
-        PLACE_LIFT(33),
-        PLACE_LIFT_EXTEND(36),
-        PICK_UP_LIFT(3),
+        PLACE_LIFT(7),
         RESET_LIFT(0),
         MANUAL_LIFT(-2),
         MANUAL_REVERSE(-3),
         SWAP_STATES_LIFT(-60),
-        PRE_PLACE_AUTO(15),
-        PRE_HANG_HIGH_LIFT(22.6),
-        HANG_HIGH_LIFT(13.5),
         HOLD_LIFT(-1);
 
         public final double pos;
@@ -49,21 +47,29 @@ public class ArmLiftIntake implements Subsystem {
     private double savedPosition = 0;
 
     boolean whatState = true;
+    boolean sensorOnce = false;
 
 
     public ArmLiftIntake(Supplier<Rotation2d> rotSupplier) {
         //Linking armLift in the code to the motor on the robot
-        armLiftIntake = new MotorEx(hm, "armLiftIntake", Motor.GoBILDA.RPM_312);
+        armLiftIntake = new MotorEx(hm, "armLiftIntake", Motor.GoBILDA.RPM_1150);
+        armLiftIntake2 = new MotorEx(hm, "armLiftIntake2", Motor.GoBILDA.RPM_1150);
 
         this.rotSupplier = rotSupplier;
+
+        armLiftIntake.setInverted(false);
+        armLiftIntake2.setInverted(true);
+
         armLiftIntake.resetEncoder();
+        armLiftIntake2.resetEncoder();
 
         //Setting the configuration for the motor
         armLiftIntake.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+        armLiftIntake2.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
 
         pidController.setTolerance(.25);
 
-        touchSensor = hm.get(DigitalChannel.class, "armLiftReset");
+        magneticSensor = hm.get(DigitalChannel.class, "magnet");
     }
 
     @Override
@@ -71,70 +77,67 @@ public class ArmLiftIntake implements Subsystem {
         //setPower(armLiftIntake.get());
         // add telemetry
         TelemetryPacket packet = new TelemetryPacket();
-        packet.put("ElevatorTicks", armLiftIntake.getCurrentPosition());
+//        packet.put("ElevatorTicks", armLiftIntake.getCurrentPosition());
+        packet.put("ElevatorTicks2", armLiftIntake2.getCurrentPosition());
+
         packet.put("Cos of Rot", rotSupplier.get().getCos());
 //        dashboard.sendTelemetryPacket(packet);
 
         double maxExtensionIn = getMaxExtensionIn();
 
+        if (getTouchSensor() && !sensorOnce) {
+            sensorOnce = true;
+            armLiftIntake2.resetEncoder();
+            savedPosition = getCurrentExtensionIn();
+        } else if (!getTouchSensor() && sensorOnce) {
+            sensorOnce = false;
+        }
+
         switch (currentState) {
             case MANUAL_REVERSE:
                 setPower(manualPower, controlState.MANUAL_REVERSE);
+//                armLiftIntake.set(manualPower);
+//                armLiftIntake2.set(manualPower);
                 return;
             case MANUAL_LIFT:
-                pidController.setSetPoint(maxExtensionIn);
-                break;
-//                setPower(manualPower, controlState.MANUAL_LIFT);
+//                pidController.setSetPoint(maxExtensionIn);
+                setPower(manualPower, controlState.MANUAL_LIFT);
+//                armLiftIntake.set(manualPower);
+//                armLiftIntake2.set(manualPower);
+                return;
 //                return;
-            case PICK_UP_LIFT:
-                pidController.setSetPoint(controlState.PICK_UP_LIFT.pos);
-                break;
-            case PLACE_LIFT:
-                pidController.setSetPoint(controlState.PLACE_LIFT.pos);
-                break;
-            case PLACE_LIFT_EXTEND:
-                pidController.setSetPoint(controlState.PLACE_LIFT_EXTEND.pos);
-                break;
-            case PRE_PLACE_AUTO:
-                pidController.setSetPoint(controlState.PRE_PLACE_AUTO.pos);
-                break;
-            case PRE_HANG_HIGH_LIFT:
-                pidController.setSetPoint(controlState.PRE_HANG_HIGH_LIFT.pos);
-                break;
-            case HANG_HIGH_LIFT:
-                pidController.setSetPoint(controlState.HANG_HIGH_LIFT.pos);
-                break;
             case HOLD_LIFT:
                 if (savedPosition > maxExtensionIn) {
                     savedPosition = maxExtensionIn;
                 }
                 pidController.setSetPoint(savedPosition);
                 break;
+            case PLACE_LIFT:
+                pidController.setSetPoint(controlState.PLACE_LIFT.pos);
+                break;
             case RESET_LIFT:
                 pidController.setSetPoint(controlState.RESET_LIFT.pos);
                 break;
         }
 
-        double currentExtension = Math.abs(armLiftIntake.getCurrentPosition() / ticksToInches);
-
-        if (getTouchSensor()) {
-            armLiftIntake.resetEncoder();
-            currentExtension = Math.abs(armLiftIntake.getCurrentPosition() / ticksToInches);
-            savedPosition = Math.abs(armLiftIntake.getCurrentPosition() / ticksToInches);
-        }
+        double currentExtension = getCurrentExtensionIn();
 
         double output = -pidController.calculate(currentExtension);
 
         if (pidController.atSetPoint()) {
             armLiftIntake.set(0);
+            armLiftIntake2.set(0);
+
         } else {
             armLiftIntake.set(output);
+            armLiftIntake2.set(output);
         }
 
         TelemetryPacket random = new TelemetryPacket();
-        random.put("lift output", output);
-        packet.put("Max Extension", maxExtensionIn);
-        packet.put("Current Extension", currentExtension);
+//        random.put("lift output", output);
+//        packet.put("Set position", pidController.getSetPoint());
+//        packet.put("Max Extension", maxExtensionIn);
+        random.put("Current Extension", currentExtension);
         random.put("Current State", currentState);
         dashboard.sendTelemetryPacket(random);
     }
@@ -155,39 +158,33 @@ public class ArmLiftIntake implements Subsystem {
             checkState();
         }
 
-        double currentExtension = Math.abs(armLiftIntake.getCurrentPosition() / ticksToInches);
+        double currentExtension = getCurrentExtensionIn();
 
         double maxExtensionIn = getMaxExtensionIn();
 
         TelemetryPacket packet = new TelemetryPacket();
         packet.put("Max Extension", maxExtensionIn);
-        packet.put("Current Extension",currentExtension);
-        packet.put("Tick lift", armLiftIntake.getCurrentPosition());
-        dashboard.sendTelemetryPacket(packet);
+        packet.put("Current Extension", currentExtension);
+        packet.put("Tick lift", armLiftIntake2.getCurrentPosition());
+//        dashboard.sendTelemetryPacket(packet);
 
         currentState = state;
 
         if (currentExtension < maxExtensionIn && power < 0 && currentState == controlState.MANUAL_LIFT) {
-            pidController.setSetPoint(maxExtensionIn);
-//            armLiftIntake.set(power);
-//            manualPower = power;
-        }  else if (power > 0 && currentState == controlState.MANUAL_REVERSE) {
+//            pidController.setSetPoint(maxExtensionIn);
             armLiftIntake.set(power);
+            armLiftIntake2.set(power);
+            manualPower = power;
+        } else if (power > 0 && currentState == controlState.MANUAL_REVERSE) {
+            armLiftIntake.set(power);
+            armLiftIntake2.set(power);
             manualPower = power;
         }
         else if (currentState == controlState.PLACE_LIFT) {
             pidController.setSetPoint(controlState.PLACE_LIFT.pos);
-        }else if (currentState == controlState.PLACE_LIFT_EXTEND) {
-            pidController.setSetPoint(controlState.PLACE_LIFT_EXTEND.pos);
-        } else if (currentState == controlState.RESET_LIFT) {
-            pidController.setSetPoint(controlState.RESET_LIFT.pos);
-        } else if (currentState == controlState.PRE_PLACE_AUTO) {
-            pidController.setSetPoint(controlState.PRE_PLACE_AUTO.pos);
         }
-        else if (currentState == controlState.PRE_HANG_HIGH_LIFT) {
-            pidController.setSetPoint(controlState.PRE_HANG_HIGH_LIFT.pos);
-        } else if (currentState == controlState.HANG_HIGH_LIFT) {
-            pidController.setSetPoint(controlState.HANG_HIGH_LIFT.pos);
+        else if (currentState == controlState.RESET_LIFT) {
+            pidController.setSetPoint(controlState.RESET_LIFT.pos);
         }
         else { // power is 0
             armLiftIntake.set(0);
@@ -203,32 +200,38 @@ public class ArmLiftIntake implements Subsystem {
     }
 
     private double getMaxExtensionIn() {
-        double maxExt = 0;
+        double maxExt = 1000;
         double capExt = 33;
 
-        if (rotSupplier.get().getDegrees() <= 90) {
-            maxExt = (21 / Math.abs(rotSupplier.get().getCos())) - 17;
-        } else if (rotSupplier.get().getDegrees() > 90) {
-            maxExt = (21 / Math.abs(rotSupplier.get().getCos())) - 19;
-        }
-        if (maxExt > capExt) {
-            maxExt = capExt;
-        }
+//        if (rotSupplier.get().getDegrees() <= 90) {
+//            maxExt = (21 / Math.abs(rotSupplier.get().getCos())) - 17;
+//        } else if (rotSupplier.get().getDegrees() > 90) {
+//            maxExt = (21 / Math.abs(rotSupplier.get().getCos())) - 19;
+//        }
+//        if (maxExt > capExt) {
+//            maxExt = capExt;
+//        }
+
         return maxExt;
     }
 
+    private double getCurrentExtensionIn() {
+        double currentExt = Math.abs(armLiftIntake2.getCurrentPosition() / ticksToInches);
+        return currentExt;
+    }
+
     public boolean isAtPosition(double tolerance) {
-        double curPos = Math.abs(armLiftIntake.getCurrentPosition() / ticksToInches);
+        double curPos = Math.abs(armLiftIntake2.getCurrentPosition() / ticksToInches);
         double desiredPos = currentState.pos;
         return Math.abs(curPos - desiredPos) <= tolerance;
     }
 
     public boolean getTouchSensor() {
         TelemetryPacket packet = new TelemetryPacket();
-        packet.put("Arm Lift Touch", touchSensor.getState());
+        packet.put("Arm Lift Touch", !magneticSensor.getState());
         dashboard.sendTelemetryPacket(packet);
 
-        return !touchSensor.getState();
+        return !magneticSensor.getState();
     }
 
 }

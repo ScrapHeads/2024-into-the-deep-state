@@ -9,38 +9,36 @@ import com.arcrobotics.ftclib.hardware.ServoEx;
 import com.arcrobotics.ftclib.hardware.SimpleServo;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 
-public class Claw implements Subsystem {
+public class ClawRotate implements Subsystem {
     //Setting clawIntake variable to be set in the Claw function
     private final ServoEx clawIntake;
-    private final ServoEx clawIntake2;
 
-    private final DigitalChannel touchSensor;
+//    private final DigitalChannel touchSensor;
 
-    public Claw() {
+    public ClawRotate() {
         //Linking clawIntake in the code to the servo on the robot
         clawIntake = new SimpleServo(hm, "intakeClaw", -1, 1);
-        clawIntake2 = new SimpleServo(hm, "intakeClaw2", -1, 1);
 
         clawIntake.turnToAngle(0);
 
-        touchSensor = hm.get(DigitalChannel.class, "touchClaw");
+//        touchSensor = hm.get(DigitalChannel.class, "touchClaw");
     }
 
     @Override
     public void periodic() {
         // add telemetry
         TelemetryPacket packet = new TelemetryPacket();
-        packet.put("Touch Sensor",touchSensor.getState());
+//        packet.put("Touch Sensor",touchSensor.getState());
         packet.put("Claw Pos", clawIntake.getPosition());
 //        dashboard.sendTelemetryPacket(packet);
     }
 
-    public boolean getTouchSensor() {
-        TelemetryPacket packet = new TelemetryPacket();
-        packet.put("Touch State", touchSensor.getState());
-        dashboard.sendTelemetryPacket(packet);
-        return !touchSensor.getState();
-    }
+//    public boolean getTouchSensor() {
+//        TelemetryPacket packet = new TelemetryPacket();
+//        packet.put("Touch State", touchSensor.getState());
+//        dashboard.sendTelemetryPacket(packet);
+//        return !touchSensor.getState();
+//    }
 
     public void setPower(double pos) {
         //Setting the clawIntake to constantly move

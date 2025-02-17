@@ -11,14 +11,10 @@ import com.arcrobotics.ftclib.command.CommandOpMode;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-import org.firstinspires.ftc.teamcode.Commands.FollowDrivePath;
 import org.firstinspires.ftc.teamcode.Commands.FollowDrivePathPP;
-import org.firstinspires.ftc.teamcode.Subsystems.ArmLiftClipper;
 import org.firstinspires.ftc.teamcode.Subsystems.ArmLiftIntake;
-import org.firstinspires.ftc.teamcode.Subsystems.ArmRotateClipper;
 import org.firstinspires.ftc.teamcode.Subsystems.ArmRotateIntake;
 import org.firstinspires.ftc.teamcode.Subsystems.Claw;
-import org.firstinspires.ftc.teamcode.Subsystems.Climber;
 import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain;
 import org.firstinspires.ftc.teamcode.roadrunner.PinpointDrive;
 
@@ -30,9 +26,6 @@ public class TestAuto extends CommandOpMode {
 
     PinpointDrive pinpointDrive = null;
 
-    //Creating climber
-    Climber climber = null;
-
     //Creating claw
     Claw claw = null;
 
@@ -41,12 +34,6 @@ public class TestAuto extends CommandOpMode {
 
     //creating armRotateIntake
     ArmRotateIntake armRotateIntake = null;
-
-    //creating armLiftClipper
-    ArmLiftClipper armLiftClipper = null;
-
-    //creating armRotateClipper
-    ArmRotateClipper armRotateClipper = null;
 
     @Override
     public void initialize() {
@@ -61,10 +48,6 @@ public class TestAuto extends CommandOpMode {
 
         pinpointDrive = new PinpointDrive(hardwareMap, new Pose2d(0, 0, 0));
         pinpointDrive.register();
-
-        //Initializing the climber
-        climber = new Climber();
-        climber.register();
 
         //Initializing the claw
         claw = new Claw();
