@@ -12,11 +12,13 @@ public class intakeClaw extends CommandBase {
     private final Claw claw;
     //Creating the position to set the servo to
     private final double pos;
+    private final double pos2;
 
-    public intakeClaw(Claw claw, double pos) {
+    public intakeClaw(Claw claw, double pos, double pos2) {
         //Taking the inputs from MainTeleop and setting them to the variables inside of this class
         this.claw = claw;
         this.pos = pos;
+        this.pos2 = pos2;
 
         addRequirements(claw);
     }
@@ -24,7 +26,8 @@ public class intakeClaw extends CommandBase {
     @Override
     public void initialize() {
         //Setting claw to the position in intakeClaw function
-        claw.setPower(pos);
+//        claw.setPower(pos, pos2);
+        claw.setPower(pos, pos2);
     }
 
     @Override
@@ -32,12 +35,13 @@ public class intakeClaw extends CommandBase {
 //        TelemetryPacket packet = new TelemetryPacket();
 //        packet.put("1", true);
 //        dashboard.sendTelemetryPacket(packet);
-        claw.setPower(0);
+        claw.setPower(0, 0);
     }
 
     @Override
     public boolean isFinished() {
         return pos <= 0 && claw.getTouchSensor();
+//        return true;
     }
 }
 

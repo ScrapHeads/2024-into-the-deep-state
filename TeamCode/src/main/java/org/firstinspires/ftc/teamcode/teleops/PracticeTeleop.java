@@ -7,6 +7,7 @@ import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.DPAD_RIGHT;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.Y;
 import static org.firstinspires.ftc.teamcode.Constants.dashboard;
 import static org.firstinspires.ftc.teamcode.Constants.hm;
+import static org.firstinspires.ftc.teamcode.Constants.*;
 import static org.firstinspires.ftc.teamcode.Constants.tele;
 
 import static org.firstinspires.ftc.teamcode.Subsystems.ArmLiftIntake.controlState.*;
@@ -22,11 +23,13 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Commands.DriveContinous;
 import org.firstinspires.ftc.teamcode.Commands.RotateArmIntake;
+import org.firstinspires.ftc.teamcode.Commands.RotateClaw;
 import org.firstinspires.ftc.teamcode.Commands.intakeClaw;
 import org.firstinspires.ftc.teamcode.Commands.liftArmIntake;
 import org.firstinspires.ftc.teamcode.Subsystems.ArmLiftIntake;
 import org.firstinspires.ftc.teamcode.Subsystems.ArmRotateIntake;
 import org.firstinspires.ftc.teamcode.Subsystems.Claw;
+import org.firstinspires.ftc.teamcode.Subsystems.ClawRotate;
 import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain;
 
 @TeleOp(name = "PracticeTeleop", group = "ScrapHeads")
@@ -42,6 +45,9 @@ public class PracticeTeleop extends CommandOpMode {
 
     //Creating claw
     Claw claw = null;
+
+    //Creating rotate claw
+    ClawRotate rClaw = null;
 
     //Creating armLiftIntake
     ArmLiftIntake armLiftIntake = null;
@@ -90,9 +96,13 @@ public class PracticeTeleop extends CommandOpMode {
         drivetrain = new Drivetrain(hardwareMap, new Pose2d(0, 0, 0));
         drivetrain.register();
 
-//        //Initializing the claw intake
-//        claw = new Claw();
-//        claw.register();
+        //Initializing the claw intake
+        claw = new Claw();
+        claw.register();
+
+        //Initializing the claw intake
+        rClaw = new ClawRotate();
+        rClaw.register();
 
         //Initializing the armRotateIntake
         armRotateIntake = new ArmRotateIntake();
@@ -137,7 +147,7 @@ public class PracticeTeleop extends CommandOpMode {
 
         //Inputs for the armLiftIntake
         new Trigger(() -> driver.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.1)
-                .whenActive(new liftArmIntake(armLiftIntake, .25, MANUAL_REVERSE))
+                .whenActive(new liftArmIntake(armLiftIntake, .4, MANUAL_REVERSE))
                 .whenInactive(new liftArmIntake(armLiftIntake, 0, HOLD_LIFT));
 
         new Trigger(() -> driver.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.1)
@@ -154,8 +164,6 @@ public class PracticeTeleop extends CommandOpMode {
 
         //Pid controls
 
-        driver.getGamepadButton(Y)
-                .whenPressed(new liftArmIntake(armLiftIntake, -.5, PLACE_LIFT));
 //        driver.getGamepadButton(Y)
 //                .whenPressed(
 //                        new ParallelCommandGroup(
@@ -197,13 +205,15 @@ public class PracticeTeleop extends CommandOpMode {
 //        driver.getGamepadButton(BACK)
 //                .whenPressed(new HangEndGame(armLiftIntake, armRotateIntake, climber));
 
-        //Inputs for the claw intake
-//        driver.getGamepadButton(B)
-//                .whenPressed(new intakeClaw(claw, 1))
-//                .whenReleased(new intakeClaw(claw, 0));
-//        driver.getGamepadButton(A)
-//                .whenPressed(new intakeClaw(claw, -1))
-//                .whenReleased(new intakeClaw(claw, 0));
+//        Inputs for the claw intake
+        driver.getGamepadButton(B)
+                .whenPressed(new RotateClaw(rClaw, placeClawPos))
+                .whileHeld(new intakeClaw(claw, intakeClawPower, intakeClawPower2))
+                .whenReleased(new intakeClaw(claw, 0, 0));
+        driver.getGamepadButton(A)
+                .whenPressed(new RotateClaw(rClaw, pickUpClawPos))
+                .whileHeld(new intakeClaw(claw, outtakeClawPower, outtakeClawPower2))
+                .whenReleased(new intakeClaw(claw, 0, 0));
 
         //Trigger example don't uncomment
 //        new Trigger(() -> driver.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.1)

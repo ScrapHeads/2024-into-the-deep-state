@@ -9,39 +9,30 @@ import com.arcrobotics.ftclib.hardware.ServoEx;
 import com.arcrobotics.ftclib.hardware.SimpleServo;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+
 public class ClawRotate implements Subsystem {
     //Setting clawIntake variable to be set in the Claw function
-    private final ServoEx clawIntake;
-
-//    private final DigitalChannel touchSensor;
+    private final ServoEx clawRotate;
 
     public ClawRotate() {
         //Linking clawIntake in the code to the servo on the robot
-        clawIntake = new SimpleServo(hm, "intakeClaw", -1, 1);
+        clawRotate = new SimpleServo(hm, "0", -100, 100, AngleUnit.DEGREES);
 
-        clawIntake.turnToAngle(0);
-
-//        touchSensor = hm.get(DigitalChannel.class, "touchClaw");
+//        clawRotate.turnToAngle(0);
     }
 
     @Override
     public void periodic() {
         // add telemetry
         TelemetryPacket packet = new TelemetryPacket();
-//        packet.put("Touch Sensor",touchSensor.getState());
-        packet.put("Claw Pos", clawIntake.getPosition());
-//        dashboard.sendTelemetryPacket(packet);
+        packet.put("Claw Pos", clawRotate.getPosition());
+        dashboard.sendTelemetryPacket(packet);
     }
-
-//    public boolean getTouchSensor() {
-//        TelemetryPacket packet = new TelemetryPacket();
-//        packet.put("Touch State", touchSensor.getState());
-//        dashboard.sendTelemetryPacket(packet);
-//        return !touchSensor.getState();
-//    }
 
     public void setPower(double pos) {
         //Setting the clawIntake to constantly move
-        clawIntake.turnToAngle(pos);
+//        clawRotate.turnToAngle(pos);
+        clawRotate.setPosition(pos);
     }
 }

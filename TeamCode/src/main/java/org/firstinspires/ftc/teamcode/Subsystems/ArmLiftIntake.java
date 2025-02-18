@@ -127,7 +127,6 @@ public class ArmLiftIntake implements Subsystem {
         if (pidController.atSetPoint()) {
             armLiftIntake.set(0);
             armLiftIntake2.set(0);
-
         } else {
             armLiftIntake.set(output);
             armLiftIntake2.set(output);
@@ -139,7 +138,7 @@ public class ArmLiftIntake implements Subsystem {
 //        packet.put("Max Extension", maxExtensionIn);
         random.put("Current Extension", currentExtension);
         random.put("Current State", currentState);
-        dashboard.sendTelemetryPacket(random);
+//        dashboard.sendTelemetryPacket(random);
     }
 
     public void checkState() {
@@ -188,6 +187,7 @@ public class ArmLiftIntake implements Subsystem {
         }
         else { // power is 0
             armLiftIntake.set(0);
+            armLiftIntake2.set(0);
             savedPosition = currentExtension;
             currentState = controlState.HOLD_LIFT;
         }
@@ -203,10 +203,12 @@ public class ArmLiftIntake implements Subsystem {
         double maxExt = 1000;
         double capExt = 33;
 
-//        if (rotSupplier.get().getDegrees() <= 90) {
-//            maxExt = (21 / Math.abs(rotSupplier.get().getCos())) - 17;
-//        } else if (rotSupplier.get().getDegrees() > 90) {
-//            maxExt = (21 / Math.abs(rotSupplier.get().getCos())) - 19;
+//        double rotation = rotSupplier.get().getDegrees();
+
+//        if (rotation < 74.8) {
+//            maxExt = (Math.abs(rotSupplier.get().getSin()) * 12) - 18.75;
+//        } else if (rotation >= 74.8) {
+//            maxExt = (29.25 / Math.abs(rotSupplier.get().getCos())) - 18.75;
 //        }
 //        if (maxExt > capExt) {
 //            maxExt = capExt;

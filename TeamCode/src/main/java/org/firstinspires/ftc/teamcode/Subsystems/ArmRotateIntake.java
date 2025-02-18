@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.Subsystems;
 
 import static org.firstinspires.ftc.teamcode.Constants.dashboard;
 import static org.firstinspires.ftc.teamcode.Constants.hm;
+import static org.firstinspires.ftc.teamcode.Constants.startOffset;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.arcrobotics.ftclib.command.Subsystem;
@@ -15,7 +16,7 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 
 public class ArmRotateIntake implements Subsystem {
     private static final double gearRatio = 10.0;
-    //private static final double ticksPerRadian = ((537.7 * gearRatio) / 2) * Math.PI;
+//    private static final double ticksPerRadian = ((537.7 * gearRatio) / 2) * Math.PI;
 
     //537.7 is the encoder resolution of the gobilda 312rpm motor
     private static final double radiansPerTick = ((6.28 / 537.7) / gearRatio);
@@ -58,7 +59,7 @@ public class ArmRotateIntake implements Subsystem {
 
     private double manualPower = 0;
     private double savedPosition = 0;
-    double startingOffset = 0;
+    double startingOffset = Math.toRadians(startOffset) / radiansPerTick;
 
     boolean whatState = true;
 
@@ -114,9 +115,9 @@ public class ArmRotateIntake implements Subsystem {
             case HB_AFTER:
                 pidController.setSetPoint(controlState.HB_AFTER.pos);
                 break;
-//            case HOLD_ROTATE:
-//                pidController.setSetPoint(savedPosition);
-//                break;
+            case HOLD_ROTATE:
+                pidController.setSetPoint(savedPosition);
+                break;
             case PRE_PICK_UP_ROTATE:
                 isProfiled = true;
                 pickUpPidController.setGoal(controlState.PRE_PICK_UP_ROTATE.pos);
@@ -148,13 +149,13 @@ public class ArmRotateIntake implements Subsystem {
 
         output = isProfiled ? pickUpPidController.calculate(currentDegrees) + feedForward : pidController.calculate(currentDegrees);
 
-//        if ((isProfiled && pickUpPidController.atGoal()) || (!isProfiled && pidController.atSetPoint())) {
-//            armRotateIntake.set(0);
-//            armRotateIntake2.set(0);
-//        } else {
-//            armRotateIntake.set(output);
-//            armRotateIntake2.set(output);
-//        }
+        if ((isProfiled && pickUpPidController.atGoal()) || (!isProfiled && pidController.atSetPoint())) {
+            armRotateIntake.set(0);
+            armRotateIntake2.set(0);
+        } else {
+            armRotateIntake.set(output);
+            armRotateIntake2.set(output);
+        }
 
 //        TelemetryPacket random = new TelemetryPacket();
 //        random.put("Rotation output", output);
@@ -172,9 +173,9 @@ public class ArmRotateIntake implements Subsystem {
         if (currentState == controlState.MANUAL_ROTATE) {
             manualPower = power;
         }
-//        else if (currentState == controlState.HOLD_ROTATE) {
-//            savedPosition = getRot().getDegrees();
-//        }
+        else if (currentState == controlState.HOLD_ROTATE) {
+            savedPosition = getRot().getDegrees();
+        }
         else if (currentState == controlState.PLACE_ROTATE) {
             pidController.setSetPoint(controlState.PLACE_ROTATE.pos);
         }
@@ -205,7 +206,6 @@ public class ArmRotateIntake implements Subsystem {
             armRotateIntake.set(0);
             armRotateIntake2.set(0);
         }
-
     }
 
     public boolean isAtPosition(double tolerance) {

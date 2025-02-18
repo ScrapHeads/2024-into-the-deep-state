@@ -21,16 +21,8 @@ public class RotateClaw extends CommandBase {
 
     @Override
     public void initialize() {
-        //Setting claw to the position in intakeClaw function
+        //Setting claw to the position in ClawRotate function
         claw.setPower(pos);
-    }
-
-    @Override
-    public void end(boolean isInterrupted) {
-//        TelemetryPacket packet = new TelemetryPacket();
-//        packet.put("1", true);
-//        dashboard.sendTelemetryPacket(packet);
-        claw.setPower(0);
     }
 
     @Override

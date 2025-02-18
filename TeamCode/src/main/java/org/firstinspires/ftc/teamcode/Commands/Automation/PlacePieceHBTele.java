@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.Commands.Automation;
 
+import static org.firstinspires.ftc.teamcode.Constants.outtakeClawPower;
+import static org.firstinspires.ftc.teamcode.Constants.outtakeClawPower2;
 import static org.firstinspires.ftc.teamcode.Subsystems.ArmLiftIntake.controlState.PLACE_LIFT;
 import static org.firstinspires.ftc.teamcode.Subsystems.ArmLiftIntake.controlState.RESET_LIFT;
 import static org.firstinspires.ftc.teamcode.Subsystems.ArmRotateIntake.controlState.FINISH_ROTATE;
@@ -24,7 +26,7 @@ public class PlacePieceHBTele extends SequentialCommandGroup {
                 new WaitUntilCommand(() -> rotation.isAtPosition(40)),
                 new liftArmIntake(lift, 1, PLACE_LIFT),
                 new WaitUntilCommand(() -> lift.isAtPosition(10)),
-                new intakeClaw(claw, 1).withTimeout(600),
+                new intakeClaw(claw, outtakeClawPower, outtakeClawPower2).withTimeout(600),
                 new RotateArmIntake(rotation, 1, HB_AFTER),
                 new WaitUntilCommand(() -> rotation.isAtPosition(15)),
                 new liftArmIntake(lift, 1, RESET_LIFT),

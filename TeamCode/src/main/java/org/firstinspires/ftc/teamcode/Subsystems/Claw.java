@@ -8,6 +8,7 @@ import com.arcrobotics.ftclib.command.Subsystem;
 import com.arcrobotics.ftclib.hardware.ServoEx;
 import com.arcrobotics.ftclib.hardware.SimpleServo;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.hardware.Servo;
 
 public class Claw implements Subsystem {
     //Setting clawIntake variable to be set in the Claw function
@@ -18,10 +19,11 @@ public class Claw implements Subsystem {
 
     public Claw() {
         //Linking clawIntake in the code to the servo on the robot
-        clawIntake = new SimpleServo(hm, "intakeClaw", -1, 1);
-        clawIntake2 = new SimpleServo(hm, "intakeClaw2", -1, 1);
+        clawIntake = new SimpleServo(hm, "1", -1, 1);
+        clawIntake2 = new SimpleServo(hm, "2", -1, 1);
 
         clawIntake.turnToAngle(0);
+        clawIntake2.turnToAngle(0);
 
         touchSensor = hm.get(DigitalChannel.class, "touchClaw");
     }
@@ -30,7 +32,7 @@ public class Claw implements Subsystem {
     public void periodic() {
         // add telemetry
         TelemetryPacket packet = new TelemetryPacket();
-        packet.put("Touch Sensor",touchSensor.getState());
+//        packet.put("Touch Sensor",touchSensor.getState());
         packet.put("Claw Pos", clawIntake.getPosition());
 //        dashboard.sendTelemetryPacket(packet);
     }
@@ -42,8 +44,9 @@ public class Claw implements Subsystem {
         return !touchSensor.getState();
     }
 
-    public void setPower(double pos) {
+    public void setPower(double pos, double pos2) {
         //Setting the clawIntake to constantly move
         clawIntake.turnToAngle(pos);
+        clawIntake2.turnToAngle(pos2);
     }
 }
