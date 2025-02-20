@@ -3,15 +3,17 @@ package org.firstinspires.ftc.teamcode.Subsystems;
 import static org.firstinspires.ftc.teamcode.Constants.dashboard;
 import static org.firstinspires.ftc.teamcode.Constants.hm;
 import static org.firstinspires.ftc.teamcode.Constants.usePIDLiftArm;
-import static org.firstinspires.ftc.teamcode.Constants.usePIDRotationArm;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.arcrobotics.ftclib.command.Subsystem;
-import com.arcrobotics.ftclib.controller.PIDController;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
+
+import org.firstinspires.ftc.teamcode.util.PID.PIDController;
+import org.firstinspires.ftc.teamcode.util.PID.ProfiledPIDController;
+import org.firstinspires.ftc.teamcode.util.PID.TrapezoidProfile;
 
 import java.util.function.Supplier;
 
@@ -19,7 +21,7 @@ public class ArmLiftIntake implements Subsystem {
     private static final double ticksToInches = 31;
 
     //TODO Not Tuned; Tune
-    private final PIDController pidController = new PIDController(0.3, 0, 0);
+    private final PIDController pidController = new PIDController(0.4, 0, 0);
 
     //Designating the armLift variable to be set in the Arm function
     private final MotorEx armLiftIntake;
@@ -30,7 +32,8 @@ public class ArmLiftIntake implements Subsystem {
     private final DigitalChannel magneticSensor;
 
     public enum controlState {
-        PLACE_LIFT(7),
+        PLACE_LIFT(14),
+        PICK_UP_LIFT(5.2),
         RESET_LIFT(0),
         MANUAL_LIFT(-2),
         MANUAL_REVERSE(-3),
@@ -69,7 +72,7 @@ public class ArmLiftIntake implements Subsystem {
         armLiftIntake.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         armLiftIntake2.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
 
-        pidController.setTolerance(.25);
+        pidController.setTolerance(.1);
 
         magneticSensor = hm.get(DigitalChannel.class, "magnet");
     }
@@ -91,6 +94,7 @@ public class ArmLiftIntake implements Subsystem {
             sensorOnce = true;
             armLiftIntake2.resetEncoder();
             savedPosition = getCurrentExtensionIn();
+            currentState = controlState.HOLD_LIFT;
         } else if (!getTouchSensor() && sensorOnce) {
             sensorOnce = false;
         }
@@ -112,13 +116,16 @@ public class ArmLiftIntake implements Subsystem {
                 if (savedPosition > maxExtensionIn) {
                     savedPosition = maxExtensionIn;
                 }
-                pidController.setSetPoint(savedPosition);
+                pidController.setSetpoint(savedPosition);
                 break;
             case PLACE_LIFT:
-                pidController.setSetPoint(controlState.PLACE_LIFT.pos);
+                pidController.setSetpoint(controlState.PLACE_LIFT.pos);
+                break;
+            case PICK_UP_LIFT:
+                pidController.setSetpoint(controlState.PICK_UP_LIFT.pos);
                 break;
             case RESET_LIFT:
-                pidController.setSetPoint(controlState.RESET_LIFT.pos);
+                pidController.setSetpoint(controlState.RESET_LIFT.pos);
                 break;
         }
 
@@ -126,7 +133,7 @@ public class ArmLiftIntake implements Subsystem {
 
         double output = -pidController.calculate(currentExtension);
 
-        if (pidController.atSetPoint() && usePIDLiftArm) {
+        if (pidController.atSetpoint() && usePIDLiftArm) {
             armLiftIntake.set(0);
             armLiftIntake2.set(0);
         } else if (usePIDLiftArm) {
@@ -139,7 +146,7 @@ public class ArmLiftIntake implements Subsystem {
 //        packet.put("Set position", pidController.getSetPoint());
 //        packet.put("Max Extension", maxExtensionIn);
         random.put("Current Extension", currentExtension);
-        random.put("Current State", currentState);
+//        random.put("Current State", currentState);
 //        dashboard.sendTelemetryPacket(random);
     }
 
@@ -167,7 +174,7 @@ public class ArmLiftIntake implements Subsystem {
         packet.put("Max Extension", maxExtensionIn);
         packet.put("Current Extension", currentExtension);
         packet.put("Tick lift", armLiftIntake2.getCurrentPosition());
-//        dashboard.sendTelemetryPacket(packet);
+        dashboard.sendTelemetryPacket(packet);
 
         currentState = state;
 
@@ -182,10 +189,13 @@ public class ArmLiftIntake implements Subsystem {
             manualPower = power;
         }
         else if (currentState == controlState.PLACE_LIFT) {
-            pidController.setSetPoint(controlState.PLACE_LIFT.pos);
+            pidController.setSetpoint(controlState.PLACE_LIFT.pos);
+        }
+        else if (currentState == controlState.PICK_UP_LIFT) {
+            pidController.setSetpoint(controlState.PICK_UP_LIFT.pos);
         }
         else if (currentState == controlState.RESET_LIFT) {
-            pidController.setSetPoint(controlState.RESET_LIFT.pos);
+            pidController.setSetpoint(controlState.RESET_LIFT.pos);
         }
         else { // power is 0
             armLiftIntake.set(0);
@@ -202,19 +212,20 @@ public class ArmLiftIntake implements Subsystem {
     }
 
     private double getMaxExtensionIn() {
-        double maxExt = 1000;
-        double capExt = 33;
+        double maxExt = 0;
+        double capExt = 21;
 
-//        double rotation = rotSupplier.get().getDegrees();
+        double rotation = rotSupplier.get().getDegrees();
+        double rotationRad = rotSupplier.get().getRadians();
 
-//        if (rotation < 74.8) {
-//            maxExt = (Math.abs(rotSupplier.get().getSin()) * 12) - 18.75;
-//        } else if (rotation >= 74.8) {
-//            maxExt = (29.25 / Math.abs(rotSupplier.get().getCos())) - 18.75;
-//        }
-//        if (maxExt > capExt) {
-//            maxExt = capExt;
-//        }
+        if (rotation < 69 && rotation > 59) {
+            maxExt = (12 / Math.abs (rotSupplier.get().getCos()) ) - 18.7;
+        } else if (rotation >= 69) {
+            maxExt = (31.25 / Math.abs (Math.cos (Math.abs (1.57 - rotationRad) ) ) ) - 18.7;
+        }
+        if (maxExt > capExt) {
+            maxExt = capExt;
+        }
 
         return maxExt;
     }
