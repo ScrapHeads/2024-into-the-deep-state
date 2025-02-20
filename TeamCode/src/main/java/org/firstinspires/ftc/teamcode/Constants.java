@@ -16,6 +16,10 @@ public class Constants {
     //Starting offset of the rotation arm in degrees
     public static double startOffset = 65;
 
+    //Using PID control for rotaion of arm and extention of arm
+    public static boolean usePIDLiftArm = true;
+    public static boolean usePIDRotationArm = true;
+
     //Rotation of the claw pos
     //Originally 0
     public static double pickUpClawPos = .37;

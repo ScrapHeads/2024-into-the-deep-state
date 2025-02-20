@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.Subsystems;
 import static org.firstinspires.ftc.teamcode.Constants.dashboard;
 import static org.firstinspires.ftc.teamcode.Constants.hm;
 import static org.firstinspires.ftc.teamcode.Constants.startOffset;
+import static org.firstinspires.ftc.teamcode.Constants.usePIDRotationArm;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.arcrobotics.ftclib.command.Subsystem;
@@ -149,10 +150,10 @@ public class ArmRotateIntake implements Subsystem {
 
         output = isProfiled ? pickUpPidController.calculate(currentDegrees) + feedForward : pidController.calculate(currentDegrees);
 
-        if ((isProfiled && pickUpPidController.atGoal()) || (!isProfiled && pidController.atSetPoint())) {
+        if ((isProfiled && pickUpPidController.atGoal()) || (!isProfiled && pidController.atSetPoint()) && usePIDRotationArm) {
             armRotateIntake.set(0);
             armRotateIntake2.set(0);
-        } else {
+        } else if (usePIDRotationArm){
             armRotateIntake.set(output);
             armRotateIntake2.set(output);
         }

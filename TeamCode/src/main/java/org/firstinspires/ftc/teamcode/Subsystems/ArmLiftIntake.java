@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.Subsystems;
 
 import static org.firstinspires.ftc.teamcode.Constants.dashboard;
 import static org.firstinspires.ftc.teamcode.Constants.hm;
+import static org.firstinspires.ftc.teamcode.Constants.usePIDLiftArm;
+import static org.firstinspires.ftc.teamcode.Constants.usePIDRotationArm;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.arcrobotics.ftclib.command.Subsystem;
@@ -124,10 +126,10 @@ public class ArmLiftIntake implements Subsystem {
 
         double output = -pidController.calculate(currentExtension);
 
-        if (pidController.atSetPoint()) {
+        if (pidController.atSetPoint() && usePIDLiftArm) {
             armLiftIntake.set(0);
             armLiftIntake2.set(0);
-        } else {
+        } else if (usePIDLiftArm) {
             armLiftIntake.set(output);
             armLiftIntake2.set(output);
         }
