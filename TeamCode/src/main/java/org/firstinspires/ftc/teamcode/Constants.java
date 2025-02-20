@@ -22,7 +22,7 @@ public class Constants {
 
     //Rotation of the claw pos
     //Originally 0
-    public static double pickUpClawPos = .39;
+    public static double pickUpClawPos = .38;
     //Originally 1
     public static double placeClawPos = .8;
     public static double clipClawPos = 1;

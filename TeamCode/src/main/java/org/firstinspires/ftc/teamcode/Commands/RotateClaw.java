@@ -31,4 +31,3 @@ public class RotateClaw extends CommandBase {
         return true;
     }
 }
-

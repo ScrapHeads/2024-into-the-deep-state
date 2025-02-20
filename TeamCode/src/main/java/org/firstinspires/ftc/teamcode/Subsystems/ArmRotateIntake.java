@@ -31,7 +31,7 @@ public class ArmRotateIntake implements Subsystem {
 
 
     //TODO Not Tuned; Tune
-    private final PIDController pidController = new PIDController(0.05, 0, 0);
+    private final PIDController pidController = new PIDController(0.08, 0, 0);
 
     private final ProfiledPIDController pickUpPidController = new ProfiledPIDController(0.1, 0.001, 0.002, new TrapezoidProfile.Constraints(50, 90));
 
