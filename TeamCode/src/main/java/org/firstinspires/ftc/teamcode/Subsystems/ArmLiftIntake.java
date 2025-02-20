@@ -32,7 +32,7 @@ public class ArmLiftIntake implements Subsystem {
     private final DigitalChannel magneticSensor;
 
     public enum controlState {
-        PLACE_LIFT(14),
+        PLACE_LIFT(19.7),
         PICK_UP_LIFT(5.2),
         RESET_LIFT(0),
         MANUAL_LIFT(-2),
@@ -147,7 +147,7 @@ public class ArmLiftIntake implements Subsystem {
 //        packet.put("Max Extension", maxExtensionIn);
         random.put("Current Extension", currentExtension);
 //        random.put("Current State", currentState);
-//        dashboard.sendTelemetryPacket(random);
+        dashboard.sendTelemetryPacket(random);
     }
 
     public void checkState() {
@@ -174,7 +174,7 @@ public class ArmLiftIntake implements Subsystem {
         packet.put("Max Extension", maxExtensionIn);
         packet.put("Current Extension", currentExtension);
         packet.put("Tick lift", armLiftIntake2.getCurrentPosition());
-        dashboard.sendTelemetryPacket(packet);
+//        dashboard.sendTelemetryPacket(packet);
 
         currentState = state;
 

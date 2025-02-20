@@ -39,7 +39,7 @@ public class ArmRotateIntake implements Subsystem {
 
 
     public enum controlState {
-        PLACE_ROTATE(174),
+        PLACE_ROTATE(178),
         HB_AFTER(80),
         PICK_UP_ROTATE(60),
         MANUAL_ROTATE(-10),

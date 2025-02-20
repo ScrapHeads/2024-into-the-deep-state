@@ -1,10 +1,6 @@
 package org.firstinspires.ftc.teamcode.teleops;
 
-import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.A;
-import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.B;
-import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.DPAD_LEFT;
-import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.DPAD_RIGHT;
-import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.Y;
+import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.*;
 import static org.firstinspires.ftc.teamcode.Constants.dashboard;
 import static org.firstinspires.ftc.teamcode.Constants.hm;
 import static org.firstinspires.ftc.teamcode.Constants.*;
@@ -16,11 +12,16 @@ import static org.firstinspires.ftc.teamcode.Subsystems.ArmRotateIntake.controlS
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.arcrobotics.ftclib.command.CommandOpMode;
+import com.arcrobotics.ftclib.command.InstantCommand;
+import com.arcrobotics.ftclib.command.ParallelCommandGroup;
+import com.arcrobotics.ftclib.command.SequentialCommandGroup;
+import com.arcrobotics.ftclib.command.WaitUntilCommand;
 import com.arcrobotics.ftclib.command.button.Trigger;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.Commands.Automation.PlacePieceHBTele;
 import org.firstinspires.ftc.teamcode.Commands.DriveContinous;
 import org.firstinspires.ftc.teamcode.Commands.RotateArmIntake;
 import org.firstinspires.ftc.teamcode.Commands.RotateClaw;
@@ -58,7 +59,6 @@ public class PracticeTeleop extends CommandOpMode {
     public enum PickUpStates {
         STATE_ONE,
         STATE_TWO,
-        STATE_THREE
     }
 
     public enum ClipperStates {
@@ -71,7 +71,7 @@ public class PracticeTeleop extends CommandOpMode {
         CONTROLLER_TWO
     }
 
-    private PickUpStates currentPickUpState = PickUpStates.STATE_THREE;
+    private PickUpStates currentPickUpState = PickUpStates.STATE_ONE;
 
     private ClipperStates currentClipperStates = ClipperStates.STATE_TWO;
 
@@ -117,7 +117,6 @@ public class PracticeTeleop extends CommandOpMode {
 
     public void assignControls() {
         //Inputs for the drive train
-//        drivetrain.setDefaultCommand(new DriveContinous(drivetrain, driver2, 1));
         drivetrain.setDefaultCommand(new DriveContinous(drivetrain, driver, 1));
 
 //        driver.getGamepadButton(START)
@@ -164,34 +163,38 @@ public class PracticeTeleop extends CommandOpMode {
 
         //Pid controls
 
-//        driver.getGamepadButton(Y)
-//                .whenPressed(
-//                        new ParallelCommandGroup(
-//                                new PlacePieceHBTele(armLiftIntake, armRotateIntake, claw),
-//                                new InstantCommand(() -> {isSlowMode = true;})
-//                        ).whenFinished(() -> {isSlowMode = false;})
-//                );
-//
-//        driver.getGamepadButton(X)
-//                .whenPressed(new InstantCommand(this::advancedPickUpStates));
-//
-//        new Trigger(() -> currentPickUpState == PickUpStates.STATE_ONE)
-//                .whenActive(
-//                        new RotateArmIntake(armRotateIntake, 1, PRE_PICK_UP_ROTATE)
-//                )
-//                .whileActiveOnce(new InstantCommand(() -> {isSlowMode = true;}));
-//
-//        new Trigger(() -> currentPickUpState == PickUpStates.STATE_TWO)
-//                .whenActive(
-//                        new SequentialCommandGroup(
-//                                new RotateArmIntake(armRotateIntake, 1, PICK_UP_ROTATE),
-//                                new intakeClaw(claw, -1).andThen(
-//                                        new liftArmIntake(armLiftIntake, 1, RESET_LIFT),
-//                                        new RotateArmIntake(armRotateIntake, 1, PRE_PICK_UP_ROTATE)
-//                                )
-//                        )
-//                );
-//
+        driver.getGamepadButton(Y)
+                .whenPressed(
+                        new ParallelCommandGroup(
+                                new PlacePieceHBTele(armLiftIntake, armRotateIntake, claw, rClaw),
+                                new InstantCommand(() -> {isSlowMode = true;})
+                        ).whenFinished(() -> {isSlowMode = false;})
+                );
+
+        driver.getGamepadButton(RIGHT_BUMPER)
+                .whenPressed(new InstantCommand(this::advancedPickUpStates));
+
+        new Trigger(() -> currentPickUpState == PickUpStates.STATE_ONE)
+                .whenActive(
+                        new RotateArmIntake(armRotateIntake, 1, PRE_PICK_UP_ROTATE)
+                )
+                .whileActiveOnce(new InstantCommand(() -> {isSlowMode = true;}));
+
+        new Trigger(() -> currentPickUpState == PickUpStates.STATE_TWO)
+                .whenActive(
+                        new SequentialCommandGroup(
+                                new RotateArmIntake(armRotateIntake, 1, PICK_UP_ROTATE),
+                                new WaitUntilCommand(() -> armRotateIntake.isAtPosition(1)),
+                                new RotateClaw(rClaw, pickUpClawPos),
+                                new liftArmIntake(armLiftIntake, 1, PICK_UP_LIFT),
+                                new intakeClaw(claw, intakeClawPower, intakeClawPower2).andThen(
+                                        new liftArmIntake(armLiftIntake, 1, RESET_LIFT),
+                                        new RotateArmIntake(armRotateIntake, 1, PRE_PICK_UP_ROTATE),
+                                        new RotateClaw(rClaw, placeClawPos)
+                                )
+                        )
+                );
+
 //        new Trigger(() -> currentPickUpState == PickUpStates.STATE_THREE)
 //                .whileActiveOnce(new InstantCommand(() -> {isSlowMode = false;}))
 //                .whenActive(
@@ -207,12 +210,12 @@ public class PracticeTeleop extends CommandOpMode {
 
 //        Inputs for the claw intake
         driver.getGamepadButton(B)
-                .whenPressed(new RotateClaw(rClaw, placeClawPos))
-                .whileHeld(new intakeClaw(claw, intakeClawPower, intakeClawPower2))
+                .whenPressed(new intakeClaw(claw, outtakeClawPower, outtakeClawPower2))
                 .whenReleased(new intakeClaw(claw, 0, 0));
         driver.getGamepadButton(A)
                 .whenPressed(new RotateClaw(rClaw, pickUpClawPos))
-                .whileHeld(new intakeClaw(claw, outtakeClawPower, outtakeClawPower2))
+                .whenPressed(new intakeClaw(claw, intakeClawPower, intakeClawPower2)
+                        .andThen(new RotateClaw(rClaw, placeClawPos)))
                 .whenReleased(new intakeClaw(claw, 0, 0));
 
         //Trigger example don't uncomment
@@ -231,9 +234,6 @@ public class PracticeTeleop extends CommandOpMode {
                 currentPickUpState = PickUpStates.STATE_TWO;
                 break;
             case STATE_TWO:
-                currentPickUpState = PickUpStates.STATE_THREE;
-                break;
-            case STATE_THREE:
                 currentPickUpState = PickUpStates.STATE_ONE;
                 break;
         };
