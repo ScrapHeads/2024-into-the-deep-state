@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.Commands;
 
 import static org.firstinspires.ftc.teamcode.Constants.dashboard;
+import static org.firstinspires.ftc.teamcode.Constants.intakeClawPower;
+import static org.firstinspires.ftc.teamcode.Constants.intakeClawPower2;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.arcrobotics.ftclib.command.CommandBase;
@@ -40,7 +42,7 @@ public class intakeClaw extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        return pos <= 0 && claw.getTouchSensor();
+        return pos >= intakeClawPower && pos2 <= intakeClawPower2 && claw.getTouchSensor();
 //        return true;
     }
 }
