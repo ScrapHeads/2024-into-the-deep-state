@@ -150,7 +150,7 @@ public class PracticeTeleop extends CommandOpMode {
                 .whenInactive(new liftArmIntake(armLiftIntake, 0, HOLD_LIFT));
 
         new Trigger(() -> driver.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.1)
-                .whenActive(new liftArmIntake(armLiftIntake, -.5, MANUAL_LIFT))
+                .whenActive(new liftArmIntake(armLiftIntake, -.75, MANUAL_LIFT))
                 .whenInactive(new liftArmIntake(armLiftIntake, 0, HOLD_LIFT));
 
         //Inputs for the armRotateIntake
@@ -183,13 +183,14 @@ public class PracticeTeleop extends CommandOpMode {
         new Trigger(() -> currentPickUpState == PickUpStates.STATE_TWO)
                 .whenActive(
                         new SequentialCommandGroup(
-                                new RotateArmIntake(armRotateIntake, 1, PICK_UP_ROTATE),
+                                new RotateArmIntake(armRotateIntake, 1, PRE_PICK_UP_ROTATE),
                                 new WaitUntilCommand(() -> armRotateIntake.isAtPosition(1)),
+                                new intakeClaw(claw, outtakeClawPower, outtakeClawPower2).withTimeout(0),
                                 new RotateClaw(rClaw, pickUpClawPos),
                                 new liftArmIntake(armLiftIntake, 1, PICK_UP_LIFT),
                                 new intakeClaw(claw, intakeClawPower, intakeClawPower2).andThen(
-                                        new liftArmIntake(armLiftIntake, 1, RESET_LIFT),
                                         new RotateArmIntake(armRotateIntake, 1, PRE_PICK_UP_ROTATE),
+                                        new liftArmIntake(armLiftIntake, 1, RESET_LIFT),
                                         new RotateClaw(rClaw, placeClawPos)
                                 )
                         )

@@ -33,12 +33,12 @@ public class ArmLiftIntake implements Subsystem {
 
     public enum controlState {
         PLACE_LIFT(19.7),
-        PICK_UP_LIFT(5.2),
+        PICK_UP_LIFT(8.9),
         RESET_LIFT(0),
         MANUAL_LIFT(-2),
         MANUAL_REVERSE(-3),
         SWAP_STATES_LIFT(-60),
-        HOLD_LIFT(-1);
+        HOLD_LIFT(.1);
 
         public final double pos;
         controlState(double pos) {
@@ -72,7 +72,9 @@ public class ArmLiftIntake implements Subsystem {
         armLiftIntake.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         armLiftIntake2.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
 
-        pidController.setTolerance(.1);
+        pidController.enableContinuousInput(-10, 180);
+
+        pidController.setTolerance(.25);
 
         magneticSensor = hm.get(DigitalChannel.class, "magnet");
     }
@@ -94,7 +96,6 @@ public class ArmLiftIntake implements Subsystem {
             sensorOnce = true;
             armLiftIntake2.resetEncoder();
             savedPosition = getCurrentExtensionIn();
-            currentState = controlState.HOLD_LIFT;
         } else if (!getTouchSensor() && sensorOnce) {
             sensorOnce = false;
         }
@@ -142,7 +143,7 @@ public class ArmLiftIntake implements Subsystem {
         }
 
         TelemetryPacket random = new TelemetryPacket();
-//        random.put("lift output", output);
+        random.put("lift output", output);
 //        packet.put("Set position", pidController.getSetPoint());
 //        packet.put("Max Extension", maxExtensionIn);
         random.put("Current Extension", currentExtension);
@@ -162,9 +163,9 @@ public class ArmLiftIntake implements Subsystem {
 
     public void setPower(double power, controlState state) {
         //Setting the lift to the power in MainTeleop
-        if (state == controlState.SWAP_STATES_LIFT) {
-            checkState();
-        }
+//        if (state == controlState.SWAP_STATES_LIFT) {
+//            checkState();
+//        }
 
         double currentExtension = getCurrentExtensionIn();
 
@@ -212,20 +213,20 @@ public class ArmLiftIntake implements Subsystem {
     }
 
     private double getMaxExtensionIn() {
-        double maxExt = 0;
+        double maxExt = 1000;
         double capExt = 21;
 
         double rotation = rotSupplier.get().getDegrees();
         double rotationRad = rotSupplier.get().getRadians();
 
-        if (rotation < 69 && rotation > 59) {
-            maxExt = (12 / Math.abs (rotSupplier.get().getCos()) ) - 18.7;
-        } else if (rotation >= 69) {
-            maxExt = (31.25 / Math.abs (Math.cos (Math.abs (1.57 - rotationRad) ) ) ) - 18.7;
-        }
-        if (maxExt > capExt) {
-            maxExt = capExt;
-        }
+//        if (rotation < 69 && rotation > 59) {
+//            maxExt = (12 / Math.abs (rotSupplier.get().getCos()) ) - 18.7;
+//        } else if (rotation >= 69) {
+//            maxExt = (31.25 / Math.abs (Math.cos (Math.abs (1.57 - rotationRad) ) ) ) - 18.7;
+//        }
+//        if (maxExt > capExt) {
+//            maxExt = capExt;
+//        }
 
         return maxExt;
     }

@@ -114,8 +114,9 @@ public class ArmRotateIntake implements Subsystem {
                 return;
             case PICK_UP_ROTATE:
 //                pickUpPidController.setSetPoint(controlState.PICK_UP_ROTATE.pos);
-                isProfiled = true;
-                pickUpPidController.setGoal(controlState.PICK_UP_ROTATE.pos);
+//                isProfiled = true;
+//                pickUpPidController.setGoal(controlState.PICK_UP_ROTATE.pos);
+                pidController.setSetpoint(controlState.PICK_UP_ROTATE.pos);
                 break;
             case PLACE_ROTATE:
                 pidController.setSetpoint(controlState.PLACE_ROTATE.pos);
@@ -127,8 +128,9 @@ public class ArmRotateIntake implements Subsystem {
                 pidController.setSetpoint(savedPosition);
                 break;
             case PRE_PICK_UP_ROTATE:
-                isProfiled = true;
-                pickUpPidController.setGoal(controlState.PRE_PICK_UP_ROTATE.pos);
+//                isProfiled = true;
+//                pickUpPidController.setGoal(controlState.PRE_PICK_UP_ROTATE.pos);
+                pidController.setSetpoint(controlState.PRE_PICK_UP_ROTATE.pos);
                 break;
         }
 
@@ -163,8 +165,8 @@ public class ArmRotateIntake implements Subsystem {
             manualPower = power;
         }
         else if (currentState == controlState.HOLD_ROTATE) {
-//            armRotateIntake.set(0);
-//            armRotateIntake2.set(0);
+            armRotateIntake.set(0);
+            armRotateIntake2.set(0);
             savedPosition = getRot().getDegrees();
         }
         else if (currentState == controlState.PLACE_ROTATE) {
