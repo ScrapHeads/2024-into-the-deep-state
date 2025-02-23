@@ -11,20 +11,17 @@ import com.arcrobotics.ftclib.command.CommandOpMode;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-import org.firstinspires.ftc.teamcode.Commands.FollowDrivePathPP;
+import org.firstinspires.ftc.teamcode.Commands.FollowDrivePath;
 import org.firstinspires.ftc.teamcode.Subsystems.ArmLiftIntake;
 import org.firstinspires.ftc.teamcode.Subsystems.ArmRotateIntake;
 import org.firstinspires.ftc.teamcode.Subsystems.Claw;
 import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain;
-import org.firstinspires.ftc.teamcode.roadrunner.PinpointDrive;
 
 @Autonomous(name = "TestAuto", group = "ScrapHeads")
 public class TestAuto extends CommandOpMode {
     //Creating all the variables used in the code
     //Creating drivetrain
     Drivetrain drivetrain = null;
-
-    PinpointDrive pinpointDrive = null;
 
     //Creating claw
     Claw claw = null;
@@ -46,8 +43,8 @@ public class TestAuto extends CommandOpMode {
 //        drivetrain = new Drivetrain(hardwareMap, new Pose2d(0, 0, 0));
 //        drivetrain.register();
 
-        pinpointDrive = new PinpointDrive(hardwareMap, new Pose2d(0, 0, 0));
-        pinpointDrive.register();
+        drivetrain = new Drivetrain(hardwareMap, new Pose2d(0, 0, 0));
+        drivetrain.register();
 
         //Initializing the claw
         claw = new Claw();
@@ -79,7 +76,7 @@ public class TestAuto extends CommandOpMode {
 
         schedule(new SequentialCommandGroup(
 
-                new FollowDrivePathPP(pinpointDrive, testTrajectory.build())
+                new FollowDrivePath(drivetrain, testTrajectory.build())
 
 //                new FollowDrivePath(drivetrain, testTrajectory.build()),
 //                new FollowDrivePath(drivetrain, nextTrajectory.build()),
