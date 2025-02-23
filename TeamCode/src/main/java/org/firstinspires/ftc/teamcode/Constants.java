@@ -16,15 +16,20 @@ public class Constants {
     //Starting offset of the rotation arm in degrees was 60
     public static double startOffset = 60;
 
+    public static double angleChange = 67;
+
+    public static double maxRotation = -176;
+
     //Using PID control for rotaion of arm and extention of arm
     public static boolean usePIDLiftArm = true;
     public static boolean usePIDRotationArm = true;
 
     //Rotation of the claw pos
     //Originally 0
-    public static double pickUpClawPos = .38;
+//    public static double pickUpClawPos = .38;
+    public static double pickUpClawPos = .35;
     //Originally 1
-    public static double placeClawPos = .8;
+    public static double placeClawPos = .7;
     public static double clipClawPos = 1;
 
     //Claw power for intake and outtake intake wheel one or right side from back of robot

@@ -1,9 +1,6 @@
 package org.firstinspires.ftc.teamcode.Subsystems;
 
-import static org.firstinspires.ftc.teamcode.Constants.dashboard;
-import static org.firstinspires.ftc.teamcode.Constants.hm;
-import static org.firstinspires.ftc.teamcode.Constants.startOffset;
-import static org.firstinspires.ftc.teamcode.Constants.usePIDRotationArm;
+import static org.firstinspires.ftc.teamcode.Constants.*;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.arcrobotics.ftclib.command.Subsystem;
@@ -31,7 +28,7 @@ public class ArmRotateIntake implements Subsystem {
 
 
     //TODO Not Tuned; Tune
-    private final PIDController pidController = new PIDController(0.08, 0, 0);
+    private final PIDController pidController = new PIDController(0.06, 0, 0);
 
     private final ProfiledPIDController pickUpPidController = new ProfiledPIDController(0.1, 0.001, 0.002, new TrapezoidProfile.Constraints(50, 90));
 
@@ -39,10 +36,11 @@ public class ArmRotateIntake implements Subsystem {
 
 
     public enum controlState {
-        PLACE_ROTATE(178),
+        PLACE_ROTATE(179),
         HB_AFTER(80),
-        PICK_UP_ROTATE(60),
+        PICK_UP_ROTATE(63),
         MANUAL_ROTATE(-10),
+        MANUAL_ROTATE_REVERSE(-11),
         SWAP_STATES_ROTATE(-55),
         PRE_PICK_UP_ROTATE(75),
         HOLD_ROTATE(15);
@@ -56,7 +54,7 @@ public class ArmRotateIntake implements Subsystem {
     private controlState currentState = controlState.MANUAL_ROTATE;
 
     private double manualPower = 0;
-    private double savedPosition = 0;
+    private double savedPosition = startOffset;
     double startingOffset = Math.toRadians(startOffset) / radiansPerTick;
 
     boolean whatState = true;
@@ -94,6 +92,7 @@ public class ArmRotateIntake implements Subsystem {
         packet.put("degrees", getRot().getDegrees());
 //        packet.put("Arm rot pos", armRotateIntake.getCurrentPosition());
         packet.put("Arm rot pos2", armRotateIntake2.getCurrentPosition());
+        packet.put("Saved position", savedPosition);
         dashboard.sendTelemetryPacket(packet);
 
         if (getTouchSensor() && !sensorOnce) {
@@ -111,6 +110,12 @@ public class ArmRotateIntake implements Subsystem {
             case MANUAL_ROTATE:
                 armRotateIntake.set(manualPower);
                 armRotateIntake2.set(manualPower);
+//                setPower(manualPower, controlState.MANUAL_ROTATE);
+                return;
+            case MANUAL_ROTATE_REVERSE:
+                armRotateIntake.set(manualPower);
+                armRotateIntake2.set(manualPower);
+//                setPower(manualPower, controlState.MANUAL_ROTATE_REVERSE);
                 return;
             case PICK_UP_ROTATE:
 //                pickUpPidController.setSetPoint(controlState.PICK_UP_ROTATE.pos);
@@ -161,7 +166,12 @@ public class ArmRotateIntake implements Subsystem {
     public void setPower(double power, controlState state) {
 
         currentState = state;
-        if (currentState == controlState.MANUAL_ROTATE) {
+
+        double rotationDegrees = getRot().getDegrees();
+
+        if ((currentState == controlState.MANUAL_ROTATE) && rotationDegrees > maxRotation ) {
+            manualPower = power;
+        } else if (currentState == controlState.MANUAL_ROTATE_REVERSE) {
             manualPower = power;
         }
         else if (currentState == controlState.HOLD_ROTATE) {
@@ -199,4 +209,16 @@ public class ArmRotateIntake implements Subsystem {
         dashboard.sendTelemetryPacket(packet);
         return !touchSensor.getState();
     }
+
+    public void increaseRot() {
+        double increaseAmount = .2;
+        if (savedPosition < angleChange - increaseAmount) {
+            savedPosition = savedPosition + increaseAmount;
+            currentState = controlState.HOLD_ROTATE;
+            TelemetryPacket packet = new TelemetryPacket();
+            packet.put("Made It", true);
+            dashboard.sendTelemetryPacket(packet);
+        }
+    }
+
 }

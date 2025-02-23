@@ -60,7 +60,7 @@ public class HighBasketAuto extends CommandOpMode {
         armRotateIntake.register();
 
         //Initializing the armLiftIntake
-        armLiftIntake = new ArmLiftIntake(armRotateIntake::getRot);
+        armLiftIntake = new ArmLiftIntake(armRotateIntake::getRot, armRotateIntake);
         armLiftIntake.register();
 
         TurnConstraints turnConstraints = new TurnConstraints(Math.PI, -Math.PI, Math.PI);

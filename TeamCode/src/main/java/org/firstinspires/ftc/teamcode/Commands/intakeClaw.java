@@ -43,6 +43,7 @@ public class intakeClaw extends CommandBase {
     @Override
     public boolean isFinished() {
         return pos >= intakeClawPower && pos2 <= intakeClawPower2 && claw.getTouchSensor();
+//        return (pos >= intakeClawPower && pos2 <= intakeClawPower2 && claw.getTouchSensor()) || (pos == 0 && pos2 == 0);
 //        return true;
     }
 }

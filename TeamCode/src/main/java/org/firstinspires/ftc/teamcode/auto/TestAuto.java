@@ -58,7 +58,7 @@ public class TestAuto extends CommandOpMode {
         armRotateIntake.register();
 
         //Initializing the armLiftIntake
-        armLiftIntake = new ArmLiftIntake(armRotateIntake::getRot);
+        armLiftIntake = new ArmLiftIntake(armRotateIntake::getRot, armRotateIntake);
         armLiftIntake.register();
 
         //Initializing the armLiftClipper
