@@ -186,7 +186,7 @@ public class ArmLiftIntake implements Subsystem {
         packet.put("Max Extension", maxExtensionIn);
         packet.put("Current Extension", currentExtension);
 //        packet.put("Tick lift", armLiftIntake2.getCurrentPosition());
-        dashboard.sendTelemetryPacket(packet);
+//        dashboard.sendTelemetryPacket(packet);
 
         currentState = state;
 

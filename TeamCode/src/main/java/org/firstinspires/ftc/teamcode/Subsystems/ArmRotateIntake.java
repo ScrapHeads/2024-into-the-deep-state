@@ -110,7 +110,7 @@ public class ArmRotateIntake implements Subsystem {
         if (getTouchSensor() && !sensorOnce) {
             sensorOnce = true;
             armRotateIntake2.resetEncoder();
-            savedPosition = new Rotation2d((armRotateIntake.getCurrentPosition() + startingOffset) * radiansPerTick).getDegrees();
+            savedPosition = new Rotation2d((armRotateIntake2.getCurrentPosition() + startingOffset) * radiansPerTick).getDegrees();
 //            currentState = controlState.HOLD_ROTATE;
             resetIncrease = true;
         } else if (!getTouchSensor() && sensorOnce) {
@@ -121,8 +121,10 @@ public class ArmRotateIntake implements Subsystem {
 
         switch (currentState) {
             case MANUAL_ROTATE:
-                armRotateIntake.set(manualPower);
-                armRotateIntake2.set(manualPower);
+                if (getRot().getDegrees() < maxRotation || (getRot().getDegrees() > maxRotation && getRot().getDegrees() < maxRotation + 30)) {
+                    armRotateIntake.set(manualPower);
+                    armRotateIntake2.set(manualPower);
+                }
 //                setPower(manualPower, controlState.MANUAL_ROTATE);
                 return;
             case MANUAL_ROTATE_REVERSE:
@@ -157,10 +159,10 @@ public class ArmRotateIntake implements Subsystem {
                 break;
         }
 
-        double currentDegrees = getRot().getDegrees();
+        double currentDegrees = new Rotation2d((armRotateIntake2.getCurrentPosition() + startingOffset) * radiansPerTick).getDegrees();
 //        double currentDegrees = Math.toDegrees((armRotateIntake2.getCurrentPosition() + startingOffset) * radiansPerTick);
 
-        if (currentDegrees < maxRotation) {
+        if (currentDegrees < maxRotation || (currentDegrees > maxRotation && currentDegrees < maxRotation + 30)) {
             pidController.setSetpoint(maxRotation);
         }
 
@@ -179,11 +181,6 @@ public class ArmRotateIntake implements Subsystem {
         random.put("current degrees", currentDegrees);
         random.put("Rot State", currentState);
         dashboard.sendTelemetryPacket(random);
-    }
-
-    public Rotation2d getRot() {
-        double rad = (armRotateIntake2.getCurrentPosition() + startingOffset) * radiansPerTick;
-        return new Rotation2d(rad);
     }
 
     public void setPower(double power, controlState state) {
@@ -220,6 +217,11 @@ public class ArmRotateIntake implements Subsystem {
         }
     }
 
+    public Rotation2d getRot() {
+        double rad = (armRotateIntake2.getCurrentPosition() + startingOffset) * radiansPerTick;
+        return new Rotation2d(rad);
+    }
+
     public boolean isAtPosition(double tolerance) {
         double curPos = getRot().getDegrees();
         double desiredPos = currentState.pos;
@@ -242,10 +244,6 @@ public class ArmRotateIntake implements Subsystem {
             pidControllerLiftRotIncrease.setSetpoint(savedIncrease);
 
             resetIncrease = false;
-
-            TelemetryPacket packet = new TelemetryPacket();
-            packet.put("Saved Increase", savedIncrease);
-            dashboard.sendTelemetryPacket(packet);
         }
     }
 
