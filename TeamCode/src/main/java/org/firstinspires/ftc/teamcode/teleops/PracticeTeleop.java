@@ -72,13 +72,15 @@ public class PracticeTeleop extends CommandOpMode {
         CONTROLLER_TWO
     }
 
-    private PickUpStates currentPickUpState = PickUpStates.STATE_ONE;
+    private PickUpStates currentPickUpState = PickUpStates.STATE_TWO;
 
     private ClipperStates currentClipperStates = ClipperStates.STATE_TWO;
 
     private controllerStates currentController = controllerStates.CONTROLLER_TWO;
 
     private boolean isSlowMode = false;
+    private boolean isClawTouched = false;
+    private boolean enableTrigger = true;
 
     @Override
     public void initialize() {
@@ -142,6 +144,12 @@ public class PracticeTeleop extends CommandOpMode {
 
         new Trigger(() -> !isSlowMode)
                 .whileActiveOnce(new DriveContinous(drivetrain, driver, 1.0));
+
+        new Trigger(() -> isClawTouched)
+                .whileActiveOnce(new SequentialCommandGroup(
+                        new ArmResetAfterPickUp(armLiftIntake, armRotateIntake, claw, rClaw),
+                        new InstantCommand(() -> isClawTouched = false)
+                        ));
 
         //Statements for in game functions controller one
 
@@ -215,11 +223,15 @@ public class PracticeTeleop extends CommandOpMode {
                 .whenReleased(new intakeClaw(claw, 0, 0));
 
         driver.getGamepadButton(A)
-                .whenPressed(new intakeClaw(claw, intakeClawPower, intakeClawPower2)
-                        .andThen(new ArmResetAfterPickUp(armLiftIntake, armRotateIntake, claw, rClaw)))
+                .whenPressed( new SequentialCommandGroup(
+                        new intakeClaw(claw, intakeClawPower, intakeClawPower2),
+                        new InstantCommand(() -> isClawTouched = true),
+                        new RotateClaw(rClaw, placeClawPos)
+
+                ))
                 .whenPressed(new RotateClaw(rClaw, pickUpClawPos))
-                .whenReleased(new intakeClaw(claw, 0, 0))
-                .whenReleased(new RotateClaw(rClaw, pickUpClawPos));
+                .whenReleased(new intakeClaw(claw, 0, 0));
+
         //Trigger example don't uncomment
 //        new Trigger(() -> driver.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.1)
 //                .whenActive(new intakeClaw(claw, 1))

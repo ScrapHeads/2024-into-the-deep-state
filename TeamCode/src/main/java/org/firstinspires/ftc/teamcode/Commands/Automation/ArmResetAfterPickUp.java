@@ -26,7 +26,8 @@ public class ArmResetAfterPickUp extends SequentialCommandGroup {
                         new RotateArmIntake(rotation, 1, PRE_PICK_UP_ROTATE)
                 ),
                 new WaitUntilCommand(() -> rotation.isAtPosition(5)),
-                new liftArmIntake(lift, 1, RESET_LIFT)
+                new liftArmIntake(lift, 1, RESET_LIFT),
+                new WaitUntilCommand(() -> lift.isAtPosition(3))
         );
     }
 }

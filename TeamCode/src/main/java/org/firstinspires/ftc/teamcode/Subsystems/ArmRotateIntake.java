@@ -30,7 +30,9 @@ public class ArmRotateIntake implements Subsystem {
     //TODO Not Tuned; Tune
     private final PIDController pidController = new PIDController(0.06, 0, 0);
 
-    private final ProfiledPIDController pickUpPidController = new ProfiledPIDController(0.1, 0.001, 0.002, new TrapezoidProfile.Constraints(50, 90));
+    private final PIDController pidControllerLiftRotIncrease = new PIDController(0.12, 0, 0);
+
+    private final ProfiledPIDController pickUpPidController = new ProfiledPIDController(0.08, 0.001, 0.002, new TrapezoidProfile.Constraints(50, 90));
 
     private final DigitalChannel touchSensor;
 
@@ -43,7 +45,8 @@ public class ArmRotateIntake implements Subsystem {
         MANUAL_ROTATE_REVERSE(-11),
         SWAP_STATES_ROTATE(-55),
         PRE_PICK_UP_ROTATE(75),
-        HOLD_ROTATE(15);
+        HOLD_ROTATE(15),
+        INCREASE_ROTATE(56);
 
         public final double pos;
         controlState(double pos) {
@@ -55,10 +58,13 @@ public class ArmRotateIntake implements Subsystem {
 
     private double manualPower = 0;
     private double savedPosition = startOffset;
+    private double savedIncrease = startOffset;
     double startingOffset = Math.toRadians(startOffset) / radiansPerTick;
 
     boolean whatState = true;
     boolean sensorOnce = false;
+
+    private boolean resetIncrease = true;
 
     double output;
 
@@ -81,7 +87,13 @@ public class ArmRotateIntake implements Subsystem {
         pidController.enableContinuousInput(-180, 180);
         pidController.reset();
 
+        pidControllerLiftRotIncrease.setTolerance(1);
+        pidControllerLiftRotIncrease.enableContinuousInput(-180, 180);
+        pidControllerLiftRotIncrease.reset();
+
         pickUpPidController.setTolerance(1);
+        pickUpPidController.enableContinuousInput(-180, 180);
+        pickUpPidController.reset(startingOffset);
 
         touchSensor = hm.get(DigitalChannel.class, "armRotateReset");
     }
@@ -89,7 +101,7 @@ public class ArmRotateIntake implements Subsystem {
     @Override
     public void periodic() {
         TelemetryPacket packet = new TelemetryPacket();
-        packet.put("degrees", getRot().getDegrees());
+//        packet.put("degrees", getRot().getDegrees());
 //        packet.put("Arm rot pos", armRotateIntake.getCurrentPosition());
         packet.put("Arm rot pos2", armRotateIntake2.getCurrentPosition());
         packet.put("Saved position", savedPosition);
@@ -100,7 +112,8 @@ public class ArmRotateIntake implements Subsystem {
             armRotateIntake2.resetEncoder();
             savedPosition = new Rotation2d((armRotateIntake.getCurrentPosition() + startingOffset) * radiansPerTick).getDegrees();
 //            currentState = controlState.HOLD_ROTATE;
-        } else if (sensorOnce) {
+            resetIncrease = true;
+        } else if (!getTouchSensor() && sensorOnce) {
             sensorOnce = false;
         }
 
@@ -130,7 +143,12 @@ public class ArmRotateIntake implements Subsystem {
                 pidController.setSetpoint(controlState.HB_AFTER.pos);
                 break;
             case HOLD_ROTATE:
+                resetIncrease = true;
                 pidController.setSetpoint(savedPosition);
+                break;
+            case INCREASE_ROTATE:
+                isProfiled = true;
+                pidControllerLiftRotIncrease.setSetpoint(savedIncrease);
                 break;
             case PRE_PICK_UP_ROTATE:
 //                isProfiled = true;
@@ -139,12 +157,16 @@ public class ArmRotateIntake implements Subsystem {
                 break;
         }
 
-        double currentDegrees = new Rotation2d((armRotateIntake2.getCurrentPosition() + startingOffset) * radiansPerTick).getDegrees();
+        double currentDegrees = getRot().getDegrees();
 //        double currentDegrees = Math.toDegrees((armRotateIntake2.getCurrentPosition() + startingOffset) * radiansPerTick);
 
-        output = isProfiled ? pickUpPidController.calculate(currentDegrees) + feedForward : pidController.calculate(currentDegrees);
+        if (currentDegrees < maxRotation) {
+            pidController.setSetpoint(maxRotation);
+        }
 
-        if ((isProfiled && pickUpPidController.atGoal()) || (!isProfiled && pidController.atSetpoint()) && usePIDRotationArm) {
+        output = isProfiled ? pidControllerLiftRotIncrease.calculate(currentDegrees) + feedForward : pidController.calculate(currentDegrees);
+
+        if ((isProfiled && pidControllerLiftRotIncrease.atSetpoint()) || (!isProfiled && pidController.atSetpoint()) && usePIDRotationArm) {
             armRotateIntake.set(0);
             armRotateIntake2.set(0);
         } else if (usePIDRotationArm) {
@@ -154,7 +176,8 @@ public class ArmRotateIntake implements Subsystem {
 
         TelemetryPacket random = new TelemetryPacket();
         random.put("Rotation output", output);
-//        random.put("current degrees", currentDegrees);
+        random.put("current degrees", currentDegrees);
+        random.put("Rot State", currentState);
         dashboard.sendTelemetryPacket(random);
     }
 
@@ -205,18 +228,23 @@ public class ArmRotateIntake implements Subsystem {
 
     public boolean getTouchSensor() {
         TelemetryPacket packet = new TelemetryPacket();
-        packet.put("Arm Rotate Touch", touchSensor.getState());
+        packet.put("Arm Rotate Touch", !touchSensor.getState());
         dashboard.sendTelemetryPacket(packet);
         return !touchSensor.getState();
     }
 
     public void increaseRot() {
         double increaseAmount = .2;
-        if (savedPosition < angleChange - increaseAmount) {
-            savedPosition = savedPosition + increaseAmount;
-            currentState = controlState.HOLD_ROTATE;
+        if (getRot().getDegrees() < angleChange - increaseAmount) {
+            savedIncrease = resetIncrease ? getRot().getDegrees() + increaseAmount : savedIncrease + increaseAmount;
+            savedIncrease = savedIncrease + increaseAmount;
+            currentState = controlState.INCREASE_ROTATE;
+            pidControllerLiftRotIncrease.setSetpoint(savedIncrease);
+
+            resetIncrease = false;
+
             TelemetryPacket packet = new TelemetryPacket();
-            packet.put("Made It", true);
+            packet.put("Saved Increase", savedIncrease);
             dashboard.sendTelemetryPacket(packet);
         }
     }

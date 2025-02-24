@@ -14,7 +14,7 @@ public class Constants {
     public static FtcDashboard dashboard;
 
     //Starting offset of the rotation arm in degrees was 60
-    public static double startOffset = 60;
+    public static double startOffset = 60.6;
 
     public static double angleChange = 67;
 
@@ -30,7 +30,7 @@ public class Constants {
     public static double pickUpClawPos = .35;
     //Originally 1
     public static double placeClawPos = .7;
-    public static double clipClawPos = 1;
+    public static double clipClawPos = .6;
 
     //Claw power for intake and outtake intake wheel one or right side from back of robot
     public static double intakeClawPower = 1;

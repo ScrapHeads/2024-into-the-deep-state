@@ -54,6 +54,8 @@ public class ArmLiftIntake implements Subsystem {
     boolean whatState = true;
     boolean sensorOnce = false;
 
+    private boolean increaseRotation = false;
+
 
     public ArmLiftIntake(Supplier<Rotation2d> rotSupplier, ArmRotateIntake armRotateIntake) {
         //Linking armLift in the code to the motor on the robot
@@ -75,7 +77,7 @@ public class ArmLiftIntake implements Subsystem {
 
         pidController.enableContinuousInput(-100, 180);
 
-        pidController.setTolerance(.25);
+        pidController.setTolerance(.15);
 
         magneticSensor = hm.get(DigitalChannel.class, "magnet");
     }
@@ -108,12 +110,16 @@ public class ArmLiftIntake implements Subsystem {
 //                armLiftIntake2.set(manualPower);
                 return;
             case MANUAL_LIFT:
-//                pidController.setSetPoint(maxExtensionIn);
-                setPower(manualPower, controlState.MANUAL_LIFT);
+                if (increaseRotation) {
+                    armRotateIntake.increaseRot();
+                    pidController.setSetpoint(maxExtensionIn);
+                    break;
+                }
+                pidController.setSetpoint(maxExtensionIn);
+//                setPower(manualPower, controlState.MANUAL_LIFT);
 //                armLiftIntake.set(manualPower);
 //                armLiftIntake2.set(manualPower);
-                return;
-//                return;
+                break;
             case HOLD_LIFT:
                 if (savedPosition > maxExtensionIn) {
                     savedPosition = maxExtensionIn;
@@ -132,6 +138,10 @@ public class ArmLiftIntake implements Subsystem {
         }
 
         double currentExtension = getCurrentExtensionIn();
+
+        if (currentExtension >= maxExtensionIn || pidController.getSetpoint() > maxExtensionIn) {
+            pidController.setSetpoint(maxExtensionIn);
+        }
 
         double output = -pidController.calculate(currentExtension);
 
@@ -182,20 +192,17 @@ public class ArmLiftIntake implements Subsystem {
 
         //To increase the lifts rotation if at max extension below where the max extension equations change
         if (currentExtension >= (maxExtensionIn - .25) && power < 0 && currentState == controlState.MANUAL_LIFT && currentRotation <= angleChange) {
-            armRotateIntake.increaseRot();
             pidController.setSetpoint(maxExtensionIn);
-            manualPower = power;
-
-            TelemetryPacket n = new TelemetryPacket();
-            n.put("Made it", true);
-            dashboard.sendTelemetryPacket(n);
+            increaseRotation = true;
         }
         else if (currentExtension < maxExtensionIn && power < 0 && currentState == controlState.MANUAL_LIFT) {
             pidController.setSetpoint(maxExtensionIn);
+            increaseRotation = false;
 //            armLiftIntake.set(power);
 //            armLiftIntake2.set(power);
-            manualPower = power;
+//            manualPower = power;
         } else if (power > 0 && currentState == controlState.MANUAL_REVERSE) {
+            increaseRotation = false;
             armLiftIntake.set(power);
             armLiftIntake2.set(power);
             manualPower = power;
@@ -223,9 +230,9 @@ public class ArmLiftIntake implements Subsystem {
 
         double rotation = rotSupplier.get().getDegrees();
 
-        if (rotation < angleChange) {
-            maxExt = ((12.441 / Math.abs (rotSupplier.get().getCos()) ) * .93934) - 18.36865;
-        } else if (rotation >= angleChange) {
+        if (rotation < angleChange && rotation > 30) {
+            maxExt = ((12.441 / Math.abs (rotSupplier.get().getCos()) ) * .93934) - 18.7;
+        } else if (rotation >= angleChange || rotation <= -170) {
             maxExt = (29.712 / Math.abs (rotSupplier.get().getSin())) - 18.7;
         }
         if (maxExt > capExt) {
