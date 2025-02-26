@@ -72,11 +72,19 @@ public class PracticeTeleop extends CommandOpMode {
         CONTROLLER_TWO
     }
 
+    public enum clawStates {
+        PLACE,
+        PICKUP,
+        DIVE
+    }
+
     private PickUpStates currentPickUpState = PickUpStates.STATE_TWO;
 
     private ClipperStates currentClipperStates = ClipperStates.STATE_TWO;
 
     private controllerStates currentController = controllerStates.CONTROLLER_TWO;
+
+    private clawStates currentClawState = clawStates.PLACE;
 
     private boolean isSlowMode = false;
     private boolean isClawTouched = false;
@@ -123,7 +131,10 @@ public class PracticeTeleop extends CommandOpMode {
         drivetrain.setDefaultCommand(new DriveContinous(drivetrain, driver, 1));
 
         driver.getGamepadButton(START)
-                .whenPressed( new InstantCommand (()-> {isSlowMode = false;}));
+                .whenPressed( new SequentialCommandGroup(
+                        new InstantCommand (()-> {isSlowMode = false;}),
+                        new InstantCommand(() -> isClawTouched = false)
+                        ));
 //
 //        driver2.getGamepadButton(START)
 //                .whenPressed(new InstantCommand(() -> currentController = controllerStates.CONTROLLER_TWO));
@@ -180,12 +191,31 @@ public class PracticeTeleop extends CommandOpMode {
                         ).whenFinished(() -> {isSlowMode = false;})
                 );
 
+        driver.getGamepadButton(LEFT_BUMPER)
+                .whenPressed(new InstantCommand(this::advancedClawStates));
+
+        new Trigger(() -> currentClawState == clawStates.PLACE)
+                .whenActive(
+                        new RotateClaw(rClaw, placeClawPos)
+                );
+
+        new Trigger(() -> currentClawState == clawStates.PICKUP)
+                .whenActive(
+                        new RotateClaw(rClaw, pickUpClawPos)
+                );
+
+        new Trigger(() -> currentClawState == clawStates.DIVE)
+                .whenActive(
+                        new RotateClaw(rClaw, pickUpDive)
+                );
+
+
         driver.getGamepadButton(RIGHT_BUMPER)
                 .whenPressed(new InstantCommand(this::advancedPickUpStates));
 
         new Trigger(() -> currentPickUpState == PickUpStates.STATE_ONE)
                 .whenActive(
-                        new RotateArmIntake(armRotateIntake, 1, PRE_PICK_UP_ROTATE)
+                        new RotateArmIntake(armRotateIntake, 1, PICK_UP_ROTATE)
                 )
                 .whileActiveOnce(new InstantCommand(() -> {isSlowMode = true;}));
 
@@ -227,9 +257,8 @@ public class PracticeTeleop extends CommandOpMode {
                         new intakeClaw(claw, intakeClawPower, intakeClawPower2),
                         new InstantCommand(() -> isClawTouched = true),
                         new RotateClaw(rClaw, placeClawPos)
-
                 ))
-                .whenPressed(new RotateClaw(rClaw, pickUpClawPos))
+//                .whenPressed(new RotateClaw(rClaw, pickUpClawPos))
                 .whenReleased(new intakeClaw(claw, 0, 0));
 
         //Trigger example don't uncomment
@@ -273,5 +302,19 @@ public class PracticeTeleop extends CommandOpMode {
                 currentController = controllerStates.CONTROLLER_ONE;
                 break;
         };
+    }
+
+    private void advancedClawStates() {
+        switch (currentClawState) {
+            case PICKUP:
+                currentClawState = clawStates.DIVE;
+                break;
+            case PLACE:
+                currentClawState = clawStates.PICKUP;
+                break;
+            case DIVE:
+                currentClawState = clawStates.PLACE;
+                break;
+        }
     }
 }

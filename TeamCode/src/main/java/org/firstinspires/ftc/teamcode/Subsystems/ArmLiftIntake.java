@@ -21,6 +21,8 @@ public class ArmLiftIntake implements Subsystem {
     //TODO Not Tuned; Tune
     private final PIDController pidController = new PIDController(0.35, 0, 0);
 
+    private final PIDController pidControllerFloor = new PIDController(0.04, 0, 0);
+
     //Designating the armLift variable to be set in the Arm function
     private final MotorEx armLiftIntake;
     private final MotorEx armLiftIntake2;
@@ -103,6 +105,8 @@ public class ArmLiftIntake implements Subsystem {
             sensorOnce = false;
         }
 
+        boolean isProfiled = false;
+
         switch (currentState) {
             case MANUAL_REVERSE:
                 setPower(manualPower, controlState.MANUAL_REVERSE);
@@ -111,11 +115,16 @@ public class ArmLiftIntake implements Subsystem {
                 return;
             case MANUAL_LIFT:
                 if (increaseRotation) {
+                    isProfiled = true;
                     armRotateIntake.increaseRot();
-                    pidController.setSetpoint(maxExtensionIn);
+                    pidControllerFloor.setSetpoint(maxExtensionIn);
                     break;
+                } else if (rotSupplier.get().getDegrees() <= angleChange && rotSupplier.get().getDegrees() >= -150) {
+                    pidControllerFloor.setSetpoint(maxExtensionIn);
+                    break;
+                } else {
+                    pidController.setSetpoint(maxExtensionIn);
                 }
-                pidController.setSetpoint(maxExtensionIn);
 //                setPower(manualPower, controlState.MANUAL_LIFT);
 //                armLiftIntake.set(manualPower);
 //                armLiftIntake2.set(manualPower);
@@ -139,13 +148,14 @@ public class ArmLiftIntake implements Subsystem {
 
         double currentExtension = getCurrentExtensionIn();
 
-        if (currentExtension >= maxExtensionIn || pidController.getSetpoint() > maxExtensionIn) {
+        if (currentExtension > maxExtensionIn) {
             pidController.setSetpoint(maxExtensionIn);
+            isProfiled = false;
         }
 
-        double output = -pidController.calculate(currentExtension);
+        double output = isProfiled ? -pidControllerFloor.calculate(currentExtension) : -pidController.calculate(currentExtension);
 
-        if (pidController.atSetpoint() && usePIDLiftArm) {
+        if (((pidController.atSetpoint() && !isProfiled) || (pidControllerFloor.atSetpoint() && isProfiled)) && usePIDLiftArm) {
             armLiftIntake.set(0);
             armLiftIntake2.set(0);
         } else if (usePIDLiftArm) {
@@ -155,10 +165,10 @@ public class ArmLiftIntake implements Subsystem {
 
         TelemetryPacket random = new TelemetryPacket();
         random.put("lift output", output);
-//        packet.put("Set position", pidController.getSetPoint());
-//        packet.put("Max Extension", maxExtensionIn);
+//        random.put("Set position", pidController.getSetPoint());
+        random.put("Max Extension", maxExtensionIn);
         random.put("Current Extension", currentExtension);
-//        random.put("Current State", currentState);
+        random.put("Current State", currentState);
         dashboard.sendTelemetryPacket(random);
     }
 
@@ -192,7 +202,7 @@ public class ArmLiftIntake implements Subsystem {
 
         //To increase the lifts rotation if at max extension below where the max extension equations change
         if (currentExtension >= (maxExtensionIn - .25) && power < 0 && currentState == controlState.MANUAL_LIFT && currentRotation <= angleChange) {
-            pidController.setSetpoint(maxExtensionIn);
+            pidControllerFloor.setSetpoint(maxExtensionIn);
             increaseRotation = true;
         }
         else if (currentExtension < maxExtensionIn && power < 0 && currentState == controlState.MANUAL_LIFT) {

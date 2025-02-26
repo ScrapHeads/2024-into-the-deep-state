@@ -30,7 +30,7 @@ public class ArmRotateIntake implements Subsystem {
     //TODO Not Tuned; Tune
     private final PIDController pidController = new PIDController(0.06, 0, 0);
 
-    private final PIDController pidControllerLiftRotIncrease = new PIDController(0.12, 0, 0);
+    private final PIDController pidControllerLiftRotIncrease = new PIDController(0.14, 0, 0);
 
     private final ProfiledPIDController pickUpPidController = new ProfiledPIDController(0.08, 0.001, 0.002, new TrapezoidProfile.Constraints(50, 90));
 
@@ -39,7 +39,7 @@ public class ArmRotateIntake implements Subsystem {
 
     public enum controlState {
         PLACE_ROTATE(179),
-        HB_AFTER(80),
+        HB_AFTER(170),
         PICK_UP_ROTATE(63),
         MANUAL_ROTATE(-10),
         MANUAL_ROTATE_REVERSE(-11),
@@ -87,7 +87,7 @@ public class ArmRotateIntake implements Subsystem {
         pidController.enableContinuousInput(-180, 180);
         pidController.reset();
 
-        pidControllerLiftRotIncrease.setTolerance(1);
+        pidControllerLiftRotIncrease.setTolerance(.2);
         pidControllerLiftRotIncrease.enableContinuousInput(-180, 180);
         pidControllerLiftRotIncrease.reset();
 
@@ -121,10 +121,11 @@ public class ArmRotateIntake implements Subsystem {
 
         switch (currentState) {
             case MANUAL_ROTATE:
-                if (getRot().getDegrees() < maxRotation || (getRot().getDegrees() > maxRotation && getRot().getDegrees() < maxRotation + 30)) {
-                    armRotateIntake.set(manualPower);
-                    armRotateIntake2.set(manualPower);
-                }
+//                if (getRot().getDegrees() < maxRotation || (getRot().getDegrees() > maxRotation && getRot().getDegrees() < maxRotation + 30)) {
+//
+//                }
+                armRotateIntake.set(manualPower);
+                armRotateIntake2.set(manualPower);
 //                setPower(manualPower, controlState.MANUAL_ROTATE);
                 return;
             case MANUAL_ROTATE_REVERSE:
@@ -162,11 +163,11 @@ public class ArmRotateIntake implements Subsystem {
         double currentDegrees = new Rotation2d((armRotateIntake2.getCurrentPosition() + startingOffset) * radiansPerTick).getDegrees();
 //        double currentDegrees = Math.toDegrees((armRotateIntake2.getCurrentPosition() + startingOffset) * radiansPerTick);
 
-        if (currentDegrees < maxRotation || (currentDegrees > maxRotation && currentDegrees < maxRotation + 30)) {
+        if (currentDegrees < maxRotation) { // || (currentDegrees > maxRotation && currentDegrees < maxRotation + 30)) {
             pidController.setSetpoint(maxRotation);
         }
 
-        output = isProfiled ? pidControllerLiftRotIncrease.calculate(currentDegrees) + feedForward : pidController.calculate(currentDegrees);
+        output = isProfiled ? pidControllerLiftRotIncrease.calculate(currentDegrees): pidController.calculate(currentDegrees);
 
         if ((isProfiled && pidControllerLiftRotIncrease.atSetpoint()) || (!isProfiled && pidController.atSetpoint()) && usePIDRotationArm) {
             armRotateIntake.set(0);
@@ -189,7 +190,9 @@ public class ArmRotateIntake implements Subsystem {
 
         double rotationDegrees = getRot().getDegrees();
 
-        if ((currentState == controlState.MANUAL_ROTATE) && rotationDegrees > maxRotation ) {
+        // && rotationDegrees > maxRotation
+
+        if ((currentState == controlState.MANUAL_ROTATE) ) {
             manualPower = power;
         } else if (currentState == controlState.MANUAL_ROTATE_REVERSE) {
             manualPower = power;
@@ -237,7 +240,7 @@ public class ArmRotateIntake implements Subsystem {
 
     public void increaseRot() {
         double increaseAmount = .2;
-        if (getRot().getDegrees() < angleChange - increaseAmount) {
+        if (getRot().getDegrees() < angleChange - increaseAmount - 1) {
             savedIncrease = resetIncrease ? getRot().getDegrees() + increaseAmount : savedIncrease + increaseAmount;
             savedIncrease = savedIncrease + increaseAmount;
             currentState = controlState.INCREASE_ROTATE;

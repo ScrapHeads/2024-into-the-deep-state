@@ -1,10 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.config.Config;
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
@@ -16,9 +13,9 @@ public class Constants {
     //Starting offset of the rotation arm in degrees was 60
     public static double startOffset = 60.6;
 
-    public static double angleChange = 67;
+    public static double angleChange = 68;
 
-    public static double maxRotation = -176;
+    public static double maxRotation = -174;
 
     //Using PID control for rotaion of arm and extention of arm
     public static boolean usePIDLiftArm = true;
@@ -26,10 +23,10 @@ public class Constants {
 
     //Rotation of the claw pos
     //Originally 0
-//    public static double pickUpClawPos = .38;
-    public static double pickUpClawPos = .35;
+    public static double pickUpDive = .1;
+    public static double pickUpClawPos = .48;
     //Originally 1
-    public static double placeClawPos = .7;
+    public static double placeClawPos = .85;
     public static double clipClawPos = .6;
 
     //Claw power for intake and outtake intake wheel one or right side from back of robot

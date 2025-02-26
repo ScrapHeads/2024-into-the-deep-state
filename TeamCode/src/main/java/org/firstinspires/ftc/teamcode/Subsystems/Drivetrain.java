@@ -67,7 +67,7 @@ public final class Drivetrain implements Subsystem {
         public RevHubOrientationOnRobot.LogoFacingDirection logoFacingDirection =
                 RevHubOrientationOnRobot.LogoFacingDirection.UP;
         public RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection =
-                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
+                RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;
 
         // drive model parameters
         public double inPerTick = 0.0019596720167;
@@ -77,7 +77,7 @@ public final class Drivetrain implements Subsystem {
         // feedforward parameters (in tick units)
         public double kS = 1.0602970460264904;
         public double kV = 0.00029320568752367834;
-        public double kA = 0.00005;
+        public double kA = 0.000067;
 
         // path profile parameters (in inches)
         public double maxWheelVel = 40;
