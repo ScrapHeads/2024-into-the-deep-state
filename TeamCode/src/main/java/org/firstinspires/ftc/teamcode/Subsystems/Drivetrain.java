@@ -80,9 +80,9 @@ public final class Drivetrain implements Subsystem {
         public double kA = 0.000067;
 
         // path profile parameters (in inches)
-        public double maxWheelVel = 40;
-        public double minProfileAccel = -30;
-        public double maxProfileAccel = 50;
+        public double maxWheelVel = 60;
+        public double minProfileAccel = -40;
+        public double maxProfileAccel = 60;
 
         // turn profile parameters (in radians)
         public double maxAngVel = Math.PI; // shared with path
@@ -525,6 +525,6 @@ public final class Drivetrain implements Subsystem {
 
         Drawing.drawRobot(packet.fieldOverlay(), pose);
 
-//        dashboard.sendTelemetryPacket(packet);
+        dashboard.sendTelemetryPacket(packet);
     }
 }

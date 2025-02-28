@@ -28,7 +28,7 @@ public class ArmRotateIntake implements Subsystem {
 
 
     //TODO Not Tuned; Tune
-    private final PIDController pidController = new PIDController(0.06, 0, 0);
+    private final PIDController pidController = new PIDController(0.032, 0, 0);
 
     private final PIDController pidControllerLiftRotIncrease = new PIDController(0.14, 0, 0);
 
@@ -38,8 +38,8 @@ public class ArmRotateIntake implements Subsystem {
 
 
     public enum controlState {
-        PLACE_ROTATE(179),
-        HB_AFTER(170),
+        PLACE_ROTATE(180),
+        HB_AFTER(165),
         PICK_UP_ROTATE(63),
         MANUAL_ROTATE(-10),
         MANUAL_ROTATE_REVERSE(-11),
@@ -83,7 +83,7 @@ public class ArmRotateIntake implements Subsystem {
         armRotateIntake.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         armRotateIntake2.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
 
-        pidController.setTolerance(1);
+        pidController.setTolerance(.5);
         pidController.enableContinuousInput(-180, 180);
         pidController.reset();
 
@@ -163,9 +163,9 @@ public class ArmRotateIntake implements Subsystem {
         double currentDegrees = new Rotation2d((armRotateIntake2.getCurrentPosition() + startingOffset) * radiansPerTick).getDegrees();
 //        double currentDegrees = Math.toDegrees((armRotateIntake2.getCurrentPosition() + startingOffset) * radiansPerTick);
 
-        if (currentDegrees < maxRotation) { // || (currentDegrees > maxRotation && currentDegrees < maxRotation + 30)) {
-            pidController.setSetpoint(maxRotation);
-        }
+//        if (currentDegrees < maxRotation) { // || (currentDegrees > maxRotation && currentDegrees < maxRotation + 30)) {
+//            pidController.setSetpoint(maxRotation);
+//        }
 
         output = isProfiled ? pidControllerLiftRotIncrease.calculate(currentDegrees): pidController.calculate(currentDegrees);
 

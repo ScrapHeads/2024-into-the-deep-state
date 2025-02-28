@@ -19,9 +19,9 @@ public class ArmLiftIntake implements Subsystem {
     private static final double ticksToInches = 31;
 
     //TODO Not Tuned; Tune
-    private final PIDController pidController = new PIDController(0.35, 0, 0);
+    private final PIDController pidController = new PIDController(0.15, 0, 0);
 
-    private final PIDController pidControllerFloor = new PIDController(0.04, 0, 0);
+    private final PIDController pidControllerFloor = new PIDController(0.05, 0, 0);
 
     //Designating the armLift variable to be set in the Arm function
     private final MotorEx armLiftIntake;
@@ -119,7 +119,7 @@ public class ArmLiftIntake implements Subsystem {
                     armRotateIntake.increaseRot();
                     pidControllerFloor.setSetpoint(maxExtensionIn);
                     break;
-                } else if (rotSupplier.get().getDegrees() <= angleChange && rotSupplier.get().getDegrees() >= -150) {
+                } else if (rotSupplier.get().getDegrees() <= angleChange + 30 && rotSupplier.get().getDegrees() >= -150) {
                     pidControllerFloor.setSetpoint(maxExtensionIn);
                     break;
                 } else {
@@ -236,7 +236,7 @@ public class ArmLiftIntake implements Subsystem {
 
     private double getMaxExtensionIn() {
         double maxExt = 0;
-        double capExt = 21;
+        double capExt = 24;
 
         double rotation = rotSupplier.get().getDegrees();
 
@@ -244,6 +244,8 @@ public class ArmLiftIntake implements Subsystem {
             maxExt = ((12.441 / Math.abs (rotSupplier.get().getCos()) ) * .93934) - 18.7;
         } else if (rotation >= angleChange || rotation <= -170) {
             maxExt = (29.712 / Math.abs (rotSupplier.get().getSin())) - 18.7;
+        } else if (rotation <= -160) {
+            maxExt = capExt;
         }
         if (maxExt > capExt) {
             maxExt = capExt;

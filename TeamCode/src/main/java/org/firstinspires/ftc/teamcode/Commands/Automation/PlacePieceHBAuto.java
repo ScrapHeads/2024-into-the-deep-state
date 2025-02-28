@@ -1,9 +1,9 @@
 package org.firstinspires.ftc.teamcode.Commands.Automation;
 
-import static org.firstinspires.ftc.teamcode.Constants.outOfTheWay;
+import static org.firstinspires.ftc.teamcode.Constants.intakeClawPower;
+import static org.firstinspires.ftc.teamcode.Constants.intakeClawPower2;
 import static org.firstinspires.ftc.teamcode.Constants.outtakeClawPower;
 import static org.firstinspires.ftc.teamcode.Constants.outtakeClawPower2;
-import static org.firstinspires.ftc.teamcode.Constants.pickUpClawPos;
 import static org.firstinspires.ftc.teamcode.Constants.pickUpDive;
 import static org.firstinspires.ftc.teamcode.Constants.placeClawPos;
 import static org.firstinspires.ftc.teamcode.Subsystems.ArmLiftIntake.controlState.PLACE_LIFT;
@@ -24,21 +24,22 @@ import org.firstinspires.ftc.teamcode.Subsystems.ArmRotateIntake;
 import org.firstinspires.ftc.teamcode.Subsystems.Claw;
 import org.firstinspires.ftc.teamcode.Subsystems.ClawRotate;
 
-public class PlacePieceHBTele extends SequentialCommandGroup {
-    public PlacePieceHBTele(ArmLiftIntake lift, ArmRotateIntake rotation, Claw claw, ClawRotate rClaw) {
+public class PlacePieceHBAuto extends SequentialCommandGroup {
+    public PlacePieceHBAuto(ArmLiftIntake lift, ArmRotateIntake rotation, Claw claw, ClawRotate rClaw) {
         addCommands(
                 new RotateArmIntake(rotation, 1, PLACE_ROTATE),
-                new WaitUntilCommand(() -> rotation.isAtPosition(40)),
+                new WaitUntilCommand(() -> rotation.isAtPosition(15)),
                 new liftArmIntake(lift, 1, PLACE_LIFT),
-                new WaitUntilCommand(() -> lift.isAtPosition(1)),
-                new intakeClaw(claw, outtakeClawPower, outtakeClawPower2).withTimeout(500),
-                new RotateClaw(rClaw, outOfTheWay).withTimeout(300),
-                new RotateArmIntake(rotation, 1, HB_AFTER),
-                new WaitUntilCommand(() -> rotation.isAtPosition(50)),
-                new liftArmIntake(lift, 1, RESET_LIFT),
-                new WaitUntilCommand(() -> lift.isAtPosition(8)),
-                new RotateArmIntake(rotation, 1, PICK_UP_ROTATE),
+                new intakeClaw(claw, intakeClawPower, intakeClawPower2).withTimeout(400),
+                new WaitUntilCommand(() -> lift.isAtPosition(10)),
                 new RotateClaw(rClaw, placeClawPos)
+//                new RotateClaw(rClaw, pickUpDive).withTimeout(300),
+//                new RotateArmIntake(rotation, 1, HB_AFTER),
+//                new WaitUntilCommand(() -> rotation.isAtPosition(50)),
+//                new liftArmIntake(lift, 1, RESET_LIFT),
+//                new WaitUntilCommand(() -> lift.isAtPosition(8)),
+//                new RotateArmIntake(rotation, 1, PICK_UP_ROTATE),
+//                new RotateClaw(rClaw, placeClawPos)
         );
     }
 }

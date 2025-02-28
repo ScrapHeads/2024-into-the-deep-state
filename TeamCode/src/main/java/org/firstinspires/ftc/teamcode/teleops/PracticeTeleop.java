@@ -111,7 +111,7 @@ public class PracticeTeleop extends CommandOpMode {
         claw = new Claw();
         claw.register();
 
-        //Initializing the claw intake
+        //Initializing the claw rotate
         rClaw = new ClawRotate();
         rClaw.register();
 
@@ -159,6 +159,8 @@ public class PracticeTeleop extends CommandOpMode {
         new Trigger(() -> isClawTouched)
                 .whileActiveOnce(new SequentialCommandGroup(
                         new ArmResetAfterPickUp(armLiftIntake, armRotateIntake, claw, rClaw),
+                        new InstantCommand(() -> isSlowMode = false),
+                        new InstantCommand(() -> currentClawState = clawStates.PLACE),
                         new InstantCommand(() -> isClawTouched = false)
                         ));
 
