@@ -3,8 +3,10 @@ package org.firstinspires.ftc.teamcode.Commands.Automation;
 import static org.firstinspires.ftc.teamcode.Constants.intakeClawPower;
 import static org.firstinspires.ftc.teamcode.Constants.intakeClawPower2;
 import static org.firstinspires.ftc.teamcode.Constants.outOfTheWay;
+import static org.firstinspires.ftc.teamcode.Constants.pickUpClawPos;
 import static org.firstinspires.ftc.teamcode.Constants.pickUpDive;
 import static org.firstinspires.ftc.teamcode.Constants.placeClawPos;
+import static org.firstinspires.ftc.teamcode.Subsystems.ArmLiftIntake.controlState.PICK_UP_LIFT;
 import static org.firstinspires.ftc.teamcode.Subsystems.ArmLiftIntake.controlState.RESET_LIFT;
 import static org.firstinspires.ftc.teamcode.Subsystems.ArmRotateIntake.controlState.HB_AFTER;
 import static org.firstinspires.ftc.teamcode.Subsystems.ArmRotateIntake.controlState.PICK_UP_ROTATE;
@@ -32,7 +34,9 @@ public class ArmPlaceToPickUp extends SequentialCommandGroup {
                 new liftArmIntake(lift, 1, RESET_LIFT),
                 new WaitUntilCommand(() -> lift.isAtPosition(8)),
                 new RotateArmIntake(rotation, 1, PICK_UP_ROTATE),
-                new RotateClaw(rClaw, placeClawPos)
+                new RotateClaw(rClaw, pickUpClawPos).withTimeout(50),
+                new WaitUntilCommand(() -> rotation.isAtPosition(3)),
+                new liftArmIntake(lift, 1, PICK_UP_LIFT)
         );
     }
 }

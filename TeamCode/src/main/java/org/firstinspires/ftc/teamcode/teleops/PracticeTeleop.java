@@ -67,6 +67,11 @@ public class PracticeTeleop extends CommandOpMode {
         STATE_TWO
     }
 
+    public enum PlaceStates {
+        PRE_PLACE,
+        AFTER_PLACE
+    }
+
     public enum controllerStates {
         CONTROLLER_ONE,
         CONTROLLER_TWO
@@ -85,6 +90,8 @@ public class PracticeTeleop extends CommandOpMode {
     private controllerStates currentController = controllerStates.CONTROLLER_TWO;
 
     private clawStates currentClawState = clawStates.PLACE;
+
+    private PlaceStates currentPlaceState = PlaceStates.AFTER_PLACE;
 
     private boolean isSlowMode = false;
     private boolean isClawTouched = false;
@@ -317,6 +324,16 @@ public class PracticeTeleop extends CommandOpMode {
             case DIVE:
                 currentClawState = clawStates.PLACE;
                 break;
+        }
+    }
+
+    private void advancePlaceStates() {
+        switch (currentPlaceState) {
+            case PRE_PLACE:
+                currentPlaceState = PlaceStates.AFTER_PLACE;
+                break;
+            case AFTER_PLACE:
+                currentPlaceState = PlaceStates.PRE_PLACE;
         }
     }
 }

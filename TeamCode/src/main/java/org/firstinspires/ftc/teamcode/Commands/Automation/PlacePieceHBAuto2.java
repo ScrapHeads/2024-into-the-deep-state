@@ -2,14 +2,8 @@ package org.firstinspires.ftc.teamcode.Commands.Automation;
 
 import static org.firstinspires.ftc.teamcode.Constants.intakeClawPower;
 import static org.firstinspires.ftc.teamcode.Constants.intakeClawPower2;
-import static org.firstinspires.ftc.teamcode.Constants.outtakeClawPower;
-import static org.firstinspires.ftc.teamcode.Constants.outtakeClawPower2;
-import static org.firstinspires.ftc.teamcode.Constants.pickUpDive;
 import static org.firstinspires.ftc.teamcode.Constants.placeClawPos;
 import static org.firstinspires.ftc.teamcode.Subsystems.ArmLiftIntake.controlState.PLACE_LIFT;
-import static org.firstinspires.ftc.teamcode.Subsystems.ArmLiftIntake.controlState.RESET_LIFT;
-import static org.firstinspires.ftc.teamcode.Subsystems.ArmRotateIntake.controlState.HB_AFTER;
-import static org.firstinspires.ftc.teamcode.Subsystems.ArmRotateIntake.controlState.PICK_UP_ROTATE;
 import static org.firstinspires.ftc.teamcode.Subsystems.ArmRotateIntake.controlState.PLACE_ROTATE;
 
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
@@ -24,11 +18,11 @@ import org.firstinspires.ftc.teamcode.Subsystems.ArmRotateIntake;
 import org.firstinspires.ftc.teamcode.Subsystems.Claw;
 import org.firstinspires.ftc.teamcode.Subsystems.ClawRotate;
 
-public class PlacePieceHBAuto extends SequentialCommandGroup {
-    public PlacePieceHBAuto(ArmLiftIntake lift, ArmRotateIntake rotation, Claw claw, ClawRotate rClaw) {
+public class PlacePieceHBAuto2 extends SequentialCommandGroup {
+    public PlacePieceHBAuto2(ArmLiftIntake lift, ArmRotateIntake rotation, Claw claw, ClawRotate rClaw) {
         addCommands(
                 new RotateArmIntake(rotation, 1, PLACE_ROTATE),
-                new WaitUntilCommand(() -> rotation.isAtPosition(15)),
+                new WaitUntilCommand(() -> rotation.isAtPosition(10)),
                 new liftArmIntake(lift, 1, PLACE_LIFT),
                 new intakeClaw(claw, intakeClawPower, intakeClawPower2).withTimeout(200),
                 new WaitUntilCommand(() -> lift.isAtPosition(10)),
