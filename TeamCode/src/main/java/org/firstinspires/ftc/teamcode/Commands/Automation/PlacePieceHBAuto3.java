@@ -19,12 +19,11 @@ import org.firstinspires.ftc.teamcode.Subsystems.ArmRotateIntake;
 import org.firstinspires.ftc.teamcode.Subsystems.Claw;
 import org.firstinspires.ftc.teamcode.Subsystems.ClawRotate;
 
-public class PlacePieceHBAuto2 extends SequentialCommandGroup {
-    public PlacePieceHBAuto2(ArmLiftIntake lift, ArmRotateIntake rotation, Claw claw, ClawRotate rClaw) {
+public class PlacePieceHBAuto3 extends SequentialCommandGroup {
+    public PlacePieceHBAuto3(ArmLiftIntake lift, ArmRotateIntake rotation, Claw claw, ClawRotate rClaw) {
         addCommands(
                 new RotateArmIntake(rotation, 1, PLACE_ROTATE),
-//                new WaitUntilCommand(() -> rotation.isAtPosition(4)),
-                new WaitCommand(1100),
+                new WaitCommand(1200),
                 new liftArmIntake(lift, 1, PLACE_LIFT),
                 new intakeClaw(claw, intakeClawPower, intakeClawPower2).withTimeout(200),
                 new WaitUntilCommand(() -> lift.isAtPosition(10)),

@@ -3,8 +3,6 @@ package org.firstinspires.ftc.teamcode.Commands.Automation;
 import static org.firstinspires.ftc.teamcode.Constants.outOfTheWay;
 import static org.firstinspires.ftc.teamcode.Constants.outtakeClawPower;
 import static org.firstinspires.ftc.teamcode.Constants.outtakeClawPower2;
-import static org.firstinspires.ftc.teamcode.Constants.pickUpClawPos;
-import static org.firstinspires.ftc.teamcode.Constants.pickUpDive;
 import static org.firstinspires.ftc.teamcode.Constants.placeClawPos;
 import static org.firstinspires.ftc.teamcode.Subsystems.ArmLiftIntake.controlState.PLACE_LIFT;
 import static org.firstinspires.ftc.teamcode.Subsystems.ArmLiftIntake.controlState.RESET_LIFT;
@@ -24,21 +22,13 @@ import org.firstinspires.ftc.teamcode.Subsystems.ArmRotateIntake;
 import org.firstinspires.ftc.teamcode.Subsystems.Claw;
 import org.firstinspires.ftc.teamcode.Subsystems.ClawRotate;
 
-public class PlacePieceHBTele extends SequentialCommandGroup {
-    public PlacePieceHBTele(ArmLiftIntake lift, ArmRotateIntake rotation, Claw claw, ClawRotate rClaw) {
+public class PrePlacePieceHBTele extends SequentialCommandGroup {
+    public PrePlacePieceHBTele(ArmLiftIntake lift, ArmRotateIntake rotation, Claw claw, ClawRotate rClaw) {
         addCommands(
                 new RotateArmIntake(rotation, 1, PLACE_ROTATE),
                 new WaitUntilCommand(() -> rotation.isAtPosition(40)),
                 new liftArmIntake(lift, 1, PLACE_LIFT),
-                new WaitUntilCommand(() -> lift.isAtPosition(1)),
-                new intakeClaw(claw, outtakeClawPower, outtakeClawPower2).withTimeout(500),
-                new RotateClaw(rClaw, outOfTheWay).withTimeout(300),
-                new RotateArmIntake(rotation, 1, HB_AFTER),
-                new WaitUntilCommand(() -> rotation.isAtPosition(50)),
-                new liftArmIntake(lift, 1, RESET_LIFT),
-                new WaitUntilCommand(() -> lift.isAtPosition(8)),
-                new RotateArmIntake(rotation, 1, PICK_UP_ROTATE),
-                new RotateClaw(rClaw, placeClawPos)
+                new WaitUntilCommand(() -> lift.isAtPosition(1))
         );
     }
 }

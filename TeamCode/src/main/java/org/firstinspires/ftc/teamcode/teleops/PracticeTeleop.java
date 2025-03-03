@@ -21,8 +21,10 @@ import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.Commands.Automation.AfterPlacePieceHBTele;
+import org.firstinspires.ftc.teamcode.Commands.Automation.ArmPlaceToPickUp;
 import org.firstinspires.ftc.teamcode.Commands.Automation.ArmResetAfterPickUp;
-import org.firstinspires.ftc.teamcode.Commands.Automation.PlacePieceHBTele;
+import org.firstinspires.ftc.teamcode.Commands.Automation.PrePlacePieceHBTele;
 import org.firstinspires.ftc.teamcode.Commands.DriveContinous;
 import org.firstinspires.ftc.teamcode.Commands.RotateArmIntake;
 import org.firstinspires.ftc.teamcode.Commands.RotateClaw;
@@ -194,11 +196,28 @@ public class PracticeTeleop extends CommandOpMode {
 
         driver.getGamepadButton(Y)
                 .whenPressed(
-                        new ParallelCommandGroup(
-                                new PlacePieceHBTele(armLiftIntake, armRotateIntake, claw, rClaw),
-                                new InstantCommand(() -> {isSlowMode = true;})
-                        ).whenFinished(() -> {isSlowMode = false;})
+                        new InstantCommand(this::advancePlaceStates)
+//                        new ParallelCommandGroup(
+//                                new PrePlacePieceHBTele(armLiftIntake, armRotateIntake, claw, rClaw),
+//                                new InstantCommand(() -> {isSlowMode = true;})
+//                        ).whenFinished(() -> {isSlowMode = false;})
                 );
+        new Trigger(() -> currentPlaceState == PlaceStates.PRE_PLACE)
+                .whenActive(
+                    new PrePlacePieceHBTele(armLiftIntake, armRotateIntake, claw, rClaw)
+                            .andThen(
+                                    new InstantCommand(() -> {isSlowMode = true;})
+                            )
+                );
+        new Trigger(() -> currentPlaceState == PlaceStates.AFTER_PLACE)
+                .whenActive(
+                        new ParallelCommandGroup(
+                                new InstantCommand(() -> {isSlowMode = false;}),
+                                new AfterPlacePieceHBTele(armLiftIntake, armRotateIntake, claw, rClaw)
+                        )
+                );
+
+
 
         driver.getGamepadButton(LEFT_BUMPER)
                 .whenPressed(new InstantCommand(this::advancedClawStates));
