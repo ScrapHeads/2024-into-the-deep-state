@@ -30,13 +30,14 @@ import org.firstinspires.ftc.teamcode.Subsystems.ClawRotate;
 public class ArmPlaceToPickUp extends SequentialCommandGroup {
     public ArmPlaceToPickUp(ArmLiftIntake lift, ArmRotateIntake rotation, Claw claw, ClawRotate rClaw) {
         addCommands(
-                new RotateClaw(rClaw, outOfTheWay).withTimeout(2000),
+                new RotateClaw(rClaw, outOfTheWay).withTimeout(10),
+                new WaitCommand(200),
 //                new RotateArmIntake(rotation, 1, HB_AFTER),//.withTimeout(200),
 //                new WaitUntilCommand(() -> rotation.isAtPosition(10)),
                 new liftArmIntake(lift, 1, RESET_LIFT),
                 new WaitUntilCommand(() -> lift.isAtPosition(6)),
                 new RotateArmIntake(rotation, 1, PICK_UP_ROTATE),
-                new RotateClaw(rClaw, littleLowerPickUpClawPos).withTimeout(50),
+                new RotateClaw(rClaw, pickUpClawPos).withTimeout(50),
 //                new WaitUntilCommand(() -> rotation.isAtPosition(3)),
                 new WaitCommand(600),
                 new liftArmIntake(lift, 1, PICK_UP_LIFT)

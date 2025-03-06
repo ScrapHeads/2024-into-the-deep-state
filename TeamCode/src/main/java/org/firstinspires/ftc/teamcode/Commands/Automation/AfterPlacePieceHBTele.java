@@ -28,7 +28,7 @@ public class AfterPlacePieceHBTele extends SequentialCommandGroup {
                 new intakeClaw(claw, outtakeClawPower, outtakeClawPower2).withTimeout(500),
                 new RotateClaw(rClaw, outOfTheWay).withTimeout(2400),
                 new liftArmIntake(lift, 1, RESET_LIFT),
-                new WaitUntilCommand(() -> lift.isAtPosition(6)),
+                new WaitUntilCommand(() -> lift.isAtPosition(4)),
                 new RotateArmIntake(rotation, 1, PICK_UP_ROTATE),
                 new RotateClaw(rClaw, placeClawPos)
         );

@@ -4,6 +4,7 @@ import static org.firstinspires.ftc.teamcode.Constants.intakeClawPower;
 import static org.firstinspires.ftc.teamcode.Constants.intakeClawPower2;
 import static org.firstinspires.ftc.teamcode.Constants.placeClawPos;
 import static org.firstinspires.ftc.teamcode.Subsystems.ArmLiftIntake.controlState.PLACE_LIFT;
+import static org.firstinspires.ftc.teamcode.Subsystems.ArmRotateIntake.controlState.HANG_ROTATE;
 import static org.firstinspires.ftc.teamcode.Subsystems.ArmRotateIntake.controlState.PLACE_ROTATE;
 
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
@@ -22,9 +23,9 @@ import org.firstinspires.ftc.teamcode.Subsystems.ClawRotate;
 public class PlacePieceHBAuto2 extends SequentialCommandGroup {
     public PlacePieceHBAuto2(ArmLiftIntake lift, ArmRotateIntake rotation, Claw claw, ClawRotate rClaw) {
         addCommands(
-                new RotateArmIntake(rotation, 1, PLACE_ROTATE),
-//                new WaitUntilCommand(() -> rotation.isAtPosition(4)),
-                new WaitCommand(1100),
+                new RotateArmIntake(rotation, 1, HANG_ROTATE),
+                new WaitCommand(1300),
+                new WaitUntilCommand(() -> rotation.isAtPosition(2)),
                 new liftArmIntake(lift, 1, PLACE_LIFT),
                 new intakeClaw(claw, intakeClawPower, intakeClawPower2).withTimeout(200),
                 new WaitUntilCommand(() -> lift.isAtPosition(10)),

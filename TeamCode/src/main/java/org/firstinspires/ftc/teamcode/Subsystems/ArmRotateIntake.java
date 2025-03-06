@@ -28,7 +28,7 @@ public class ArmRotateIntake implements Subsystem {
 
 
     //TODO Not Tuned; Tune
-    private final PIDController pidController = new PIDController(0.032, 0, 0);
+    private final PIDController pidController = new PIDController(0.026, 0, 0.0001);
 
     private final PIDController pidControllerLiftRotIncrease = new PIDController(0.14, 0, 0);
 
@@ -38,7 +38,8 @@ public class ArmRotateIntake implements Subsystem {
 
 
     public enum controlState {
-        PLACE_ROTATE(180),
+        PLACE_ROTATE(-179),
+        HANG_ROTATE(-178),
         HB_AFTER(165),
         PICK_UP_ROTATE(63),
         MANUAL_ROTATE(-10),
@@ -91,7 +92,7 @@ public class ArmRotateIntake implements Subsystem {
         pidControllerLiftRotIncrease.enableContinuousInput(-180, 180);
         pidControllerLiftRotIncrease.reset();
 
-        pickUpPidController.setTolerance(1);
+        pickUpPidController.setTolerance(.5);
         pickUpPidController.enableContinuousInput(-180, 180);
         pickUpPidController.reset(startingOffset);
 
@@ -121,13 +122,19 @@ public class ArmRotateIntake implements Subsystem {
 
         switch (currentState) {
             case MANUAL_ROTATE:
-//                if (getRot().getDegrees() < maxRotation || (getRot().getDegrees() > maxRotation && getRot().getDegrees() < maxRotation + 30)) {
-//
-//                }
-                armRotateIntake.set(manualPower);
-                armRotateIntake2.set(manualPower);
+                if (getRot().getDegrees() > 0) {
+                    armRotateIntake.set(manualPower);
+                    armRotateIntake2.set(manualPower);
+                    return;
+                }
+                else {
+                    armRotateIntake.set(0);
+                    armRotateIntake2.set(0);
+                    pidController.setSetpoint(maxRotation);
+                    break;
+                }
+
 //                setPower(manualPower, controlState.MANUAL_ROTATE);
-                return;
             case MANUAL_ROTATE_REVERSE:
                 armRotateIntake.set(manualPower);
                 armRotateIntake2.set(manualPower);
@@ -138,6 +145,9 @@ public class ArmRotateIntake implements Subsystem {
 //                isProfiled = true;
 //                pickUpPidController.setGoal(controlState.PICK_UP_ROTATE.pos);
                 pidController.setSetpoint(controlState.PICK_UP_ROTATE.pos);
+                break;
+            case HANG_ROTATE:
+                pidController.setSetpoint(controlState.HANG_ROTATE.pos);
                 break;
             case PLACE_ROTATE:
                 pidController.setSetpoint(controlState.PLACE_ROTATE.pos);
@@ -161,13 +171,12 @@ public class ArmRotateIntake implements Subsystem {
         }
 
         double currentDegrees = new Rotation2d((armRotateIntake2.getCurrentPosition() + startingOffset) * radiansPerTick).getDegrees();
-//        double currentDegrees = Math.toDegrees((armRotateIntake2.getCurrentPosition() + startingOffset) * radiansPerTick);
 
-//        if (currentDegrees < maxRotation) { // || (currentDegrees > maxRotation && currentDegrees < maxRotation + 30)) {
-//            pidController.setSetpoint(maxRotation);
-//        }
+        if (currentDegrees < 0 && (currentState == controlState.MANUAL_ROTATE || currentState == controlState.HOLD_ROTATE)) {
+            pidController.setSetpoint(maxRotation);
+        }
 
-        output = isProfiled ? pidControllerLiftRotIncrease.calculate(currentDegrees): pidController.calculate(currentDegrees);
+        output = isProfiled ? pidControllerLiftRotIncrease.calculate(currentDegrees) : pidController.calculate(currentDegrees);
 
         if ((isProfiled && pidControllerLiftRotIncrease.atSetpoint()) || (!isProfiled && pidController.atSetpoint()) && usePIDRotationArm) {
             armRotateIntake.set(0);
@@ -192,7 +201,7 @@ public class ArmRotateIntake implements Subsystem {
 
         // && rotationDegrees > maxRotation
 
-        if ((currentState == controlState.MANUAL_ROTATE) ) {
+        if ((currentState == controlState.MANUAL_ROTATE && rotationDegrees > 0) ) {
             manualPower = power;
         } else if (currentState == controlState.MANUAL_ROTATE_REVERSE) {
             manualPower = power;
@@ -213,6 +222,9 @@ public class ArmRotateIntake implements Subsystem {
         }
         else if (currentState == controlState.PICK_UP_ROTATE) {
             pickUpPidController.setGoal(controlState.PICK_UP_ROTATE.pos);
+        }
+        else if (currentState == controlState.HANG_ROTATE) {
+            pickUpPidController.setGoal(controlState.HANG_ROTATE.pos);
         }
         else {
             armRotateIntake.set(0);

@@ -35,7 +35,7 @@ public class ArmLiftIntake implements Subsystem {
 
     public enum controlState {
         PLACE_LIFT(22),
-        PICK_UP_LIFT(5),
+        PICK_UP_LIFT(5.0),
         RESET_LIFT(0),
         MANUAL_LIFT(-2),
         MANUAL_REVERSE(-3),

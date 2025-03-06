@@ -24,8 +24,10 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.Commands.Automation.AfterPlacePieceHBTele;
 import org.firstinspires.ftc.teamcode.Commands.Automation.ArmPlaceToPickUp;
 import org.firstinspires.ftc.teamcode.Commands.Automation.ArmResetAfterPickUp;
+import org.firstinspires.ftc.teamcode.Commands.Automation.AutoHang;
 import org.firstinspires.ftc.teamcode.Commands.Automation.PrePlacePieceHBTele;
 import org.firstinspires.ftc.teamcode.Commands.DriveContinous;
+import org.firstinspires.ftc.teamcode.Commands.OdPodLift;
 import org.firstinspires.ftc.teamcode.Commands.RotateArmIntake;
 import org.firstinspires.ftc.teamcode.Commands.RotateClaw;
 import org.firstinspires.ftc.teamcode.Commands.intakeClaw;
@@ -35,6 +37,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.ArmRotateIntake;
 import org.firstinspires.ftc.teamcode.Subsystems.Claw;
 import org.firstinspires.ftc.teamcode.Subsystems.ClawRotate;
 import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain;
+import org.firstinspires.ftc.teamcode.Subsystems.LiftOdPods;
 
 @TeleOp(name = "PracticeTeleop", group = "ScrapHeads")
 public class PracticeTeleop extends CommandOpMode {
@@ -52,6 +55,10 @@ public class PracticeTeleop extends CommandOpMode {
 
     //Creating rotate claw
     ClawRotate rClaw = null;
+
+    //Creating liftOdPods
+
+    LiftOdPods liftOdPods = null;
 
     //Creating armLiftIntake
     ArmLiftIntake armLiftIntake = null;
@@ -123,6 +130,10 @@ public class PracticeTeleop extends CommandOpMode {
         //Initializing the claw rotate
         rClaw = new ClawRotate();
         rClaw.register();
+
+        //Initializing the odPod lift
+        liftOdPods = new LiftOdPods();
+        liftOdPods.register();
 
         //Initializing the armRotateIntake
         armRotateIntake = new ArmRotateIntake();
@@ -262,18 +273,14 @@ public class PracticeTeleop extends CommandOpMode {
                         )
                 );
 
-//        new Trigger(() -> currentPickUpState == PickUpStates.STATE_THREE)
-//                .whileActiveOnce(new InstantCommand(() -> {isSlowMode = false;}))
-//                .whenActive(
-//                        new ParallelCommandGroup(
-//                                new RotateArmIntake(armRotateIntake, 1, TUCK_ROTATE),
-//                                new intakeClaw(claw, 0),
-//                                new DriveContinous(drivetrain, driver, 1)
-//                        )
-//                );
-//
-//        driver.getGamepadButton(BACK)
-//                .whenPressed(new HangEndGame(armLiftIntake, armRotateIntake, climber));
+        driver.getGamepadButton(BACK)
+                .whenPressed(
+                        new ParallelCommandGroup(
+                                new OdPodLift(liftOdPods, odPodLeftRetract, odPodRightRetract).withTimeout(500),
+                                new AutoHang(armRotateIntake)
+                                //Add automated hang
+                )
+                );
 
 //        Inputs for the claw intake
         driver.getGamepadButton(B)
