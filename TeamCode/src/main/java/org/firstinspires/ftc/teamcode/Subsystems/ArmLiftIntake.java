@@ -35,7 +35,8 @@ public class ArmLiftIntake implements Subsystem {
 
     public enum controlState {
         PLACE_LIFT(22),
-        PICK_UP_LIFT(5.0),
+        PICK_UP_LIFT(4.8),
+        PICK_UP_LIFT_HIGH(4.75),
         RESET_LIFT(0),
         MANUAL_LIFT(-2),
         MANUAL_REVERSE(-3),
@@ -141,6 +142,9 @@ public class ArmLiftIntake implements Subsystem {
             case PICK_UP_LIFT:
                 pidController.setSetpoint(controlState.PICK_UP_LIFT.pos);
                 break;
+            case PICK_UP_LIFT_HIGH:
+                pidController.setSetpoint(controlState.PICK_UP_LIFT_HIGH.pos);
+                break;
             case RESET_LIFT:
                 pidController.setSetpoint(controlState.RESET_LIFT.pos);
                 break;
@@ -222,6 +226,9 @@ public class ArmLiftIntake implements Subsystem {
         }
         else if (currentState == controlState.PICK_UP_LIFT) {
             pidController.setSetpoint(controlState.PICK_UP_LIFT.pos);
+        }
+        else if (currentState == controlState.PICK_UP_LIFT_HIGH) {
+            pidController.setSetpoint(controlState.PICK_UP_LIFT_HIGH.pos);
         }
         else if (currentState == controlState.RESET_LIFT) {
             pidController.setSetpoint(controlState.RESET_LIFT.pos);

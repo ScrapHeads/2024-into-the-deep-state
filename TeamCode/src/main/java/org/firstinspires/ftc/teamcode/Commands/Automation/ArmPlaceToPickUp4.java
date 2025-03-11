@@ -1,10 +1,8 @@
 package org.firstinspires.ftc.teamcode.Commands.Automation;
 
-import static org.firstinspires.ftc.teamcode.Constants.littleLowerPickUpClawPos;
 import static org.firstinspires.ftc.teamcode.Constants.outOfTheWay;
 import static org.firstinspires.ftc.teamcode.Constants.pickUpClawPos;
 import static org.firstinspires.ftc.teamcode.Constants.placeClawPos;
-import static org.firstinspires.ftc.teamcode.Subsystems.ArmLiftIntake.controlState.PICK_UP_LIFT;
 import static org.firstinspires.ftc.teamcode.Subsystems.ArmLiftIntake.controlState.PICK_UP_LIFT_HIGH;
 import static org.firstinspires.ftc.teamcode.Subsystems.ArmLiftIntake.controlState.RESET_LIFT;
 import static org.firstinspires.ftc.teamcode.Subsystems.ArmRotateIntake.controlState.PICK_UP_ROTATE;
@@ -21,19 +19,15 @@ import org.firstinspires.ftc.teamcode.Subsystems.ArmRotateIntake;
 import org.firstinspires.ftc.teamcode.Subsystems.Claw;
 import org.firstinspires.ftc.teamcode.Subsystems.ClawRotate;
 
-public class ArmPlaceToPickUp3 extends SequentialCommandGroup {
-    public ArmPlaceToPickUp3(ArmLiftIntake lift, ArmRotateIntake rotation, Claw claw, ClawRotate rClaw) {
+public class ArmPlaceToPickUp4 extends SequentialCommandGroup {
+    public ArmPlaceToPickUp4(ArmLiftIntake lift, ArmRotateIntake rotation, Claw claw, ClawRotate rClaw) {
         addCommands(
-                new RotateClaw(rClaw, outOfTheWay),
-                new WaitCommand(200),
+                new RotateClaw(rClaw, outOfTheWay).withTimeout(100),
+                new WaitCommand(500),
                 new liftArmIntake(lift, 1, RESET_LIFT),
                 new WaitUntilCommand(() -> lift.isAtPosition(4)),
                 new RotateArmIntake(rotation, 1, PICK_UP_ROTATE),
-                new RotateClaw(rClaw, placeClawPos),
-                new WaitCommand(300),
-//                new WaitUntilCommand(() -> rotation.isAtPosition(3)),
-                new liftArmIntake(lift, 1, PICK_UP_LIFT_HIGH),
-                new RotateClaw(rClaw, pickUpClawPos).withTimeout(10)
+                new RotateClaw(rClaw, placeClawPos)
         );
     }
 }
