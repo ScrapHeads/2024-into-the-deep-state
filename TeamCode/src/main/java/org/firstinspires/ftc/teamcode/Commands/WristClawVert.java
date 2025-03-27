@@ -1,0 +1,33 @@
+package org.firstinspires.ftc.teamcode.Commands;
+
+import com.arcrobotics.ftclib.command.CommandBase;
+
+import org.firstinspires.ftc.teamcode.Subsystems.ClawRotateHorizontal;
+import org.firstinspires.ftc.teamcode.Subsystems.ClawWristVert;
+
+public class WristClawVert extends CommandBase {
+    //linking claw variable to the Claw subsystem
+    private final ClawWristVert claw;
+    //Creating the position to set the servo to
+    private final double pos;
+
+    public WristClawVert(ClawWristVert claw, double pos) {
+        //Taking the inputs from MainTeleop and setting them to the variables inside of this class
+        this.claw = claw;
+        this.pos = pos;
+
+        addRequirements(claw);
+    }
+
+    @Override
+    public void initialize() {
+        //Setting claw to the position in ClawRotate function
+        claw.setPower(pos);
+    }
+
+    @Override
+    public boolean isFinished() {
+//        return pos <= 0 && claw.getTouchSensor();
+        return true;
+    }
+}

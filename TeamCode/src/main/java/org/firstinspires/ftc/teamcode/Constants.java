@@ -17,20 +17,29 @@ public class Constants {
 
     public static double maxRotation = 180;
 
-    //Using PID control for rotaion of arm and extention of arm
+    //Using PID control for rotation of arm and extension of arm
     public static boolean usePIDLiftArm = true;
     public static boolean usePIDRotationArm = true;
 
-    //Rotation of the claw pos
+    //Wrist claw positions up down
     //Originally 0
-    public static double outOfTheWay = .10;
-    public static double pickUpDive = .17;
-    public static double pickUpClawPos = .26;
-    public static double littleLowerPickUpClawPos = .25;
+//    public static double outOfTheWay = .10;
+//    public static double pickUpDive = .17;
+    public static double pickUpClawPos = 0.25;
+    public static double pickUpHighClawPos = .65;
 
     //Originally 1
-    public static double placeClawPos = .6;
+    public static double placeClawPos = .9;
     public static double clipClawPos = .6; // Not tested
+    //End of the Wrist claw positions
+
+    //Rotate claw positions left right
+    //Originally 1
+//    public static double leftClawPos45 = .4;
+    public static double centerClawPos = .73;
+    //Originally 0
+    public static double rightClawPos90 = .4;
+    //End of the rotate claw positions
 
     //Claw power for intake and outtake intake wheel one or right side from back of robot
     public static double intakeClawPower = 1;

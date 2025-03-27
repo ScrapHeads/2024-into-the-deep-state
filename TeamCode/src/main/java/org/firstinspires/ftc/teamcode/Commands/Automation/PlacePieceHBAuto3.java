@@ -11,23 +11,25 @@ import com.arcrobotics.ftclib.command.WaitCommand;
 import com.arcrobotics.ftclib.command.WaitUntilCommand;
 
 import org.firstinspires.ftc.teamcode.Commands.RotateArmIntake;
-import org.firstinspires.ftc.teamcode.Commands.RotateClaw;
+import org.firstinspires.ftc.teamcode.Commands.RotateClawHorizontal;
+import org.firstinspires.ftc.teamcode.Commands.WristClawVert;
 import org.firstinspires.ftc.teamcode.Commands.intakeClaw;
 import org.firstinspires.ftc.teamcode.Commands.liftArmIntake;
 import org.firstinspires.ftc.teamcode.Subsystems.ArmLiftIntake;
 import org.firstinspires.ftc.teamcode.Subsystems.ArmRotateIntake;
 import org.firstinspires.ftc.teamcode.Subsystems.Claw;
-import org.firstinspires.ftc.teamcode.Subsystems.ClawRotate;
+import org.firstinspires.ftc.teamcode.Subsystems.ClawRotateHorizontal;
+import org.firstinspires.ftc.teamcode.Subsystems.ClawWristVert;
 
 public class PlacePieceHBAuto3 extends SequentialCommandGroup {
-    public PlacePieceHBAuto3(ArmLiftIntake lift, ArmRotateIntake rotation, Claw claw, ClawRotate rClaw) {
+    public PlacePieceHBAuto3(ArmLiftIntake lift, ArmRotateIntake rotation, Claw claw, ClawWristVert wClawV) {
         addCommands(
                 new RotateArmIntake(rotation, 1, PLACE_ROTATE),
                 new WaitCommand(1200),
                 new liftArmIntake(lift, 1, PLACE_LIFT),
                 new intakeClaw(claw, intakeClawPower, intakeClawPower2).withTimeout(200),
                 new WaitUntilCommand(() -> lift.isAtPosition(10)),
-                new RotateClaw(rClaw, placeClawPos)
+                new WristClawVert(wClawV, placeClawPos)
         );
     }
 }

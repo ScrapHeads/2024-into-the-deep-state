@@ -7,17 +7,17 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.arcrobotics.ftclib.command.Subsystem;
 import com.arcrobotics.ftclib.hardware.ServoEx;
 import com.arcrobotics.ftclib.hardware.SimpleServo;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
-public class ClawRotate implements Subsystem {
+public class ClawWristVert implements Subsystem {
     //Setting clawIntake variable to be set in the Claw function
-    private final ServoEx clawRotate;
+    private final ServoEx clawWrist;
 
-    public ClawRotate() {
+    public ClawWristVert() {
         //Linking clawIntake in the code to the servo on the robot
-        clawRotate = new SimpleServo(hm, "0", -100, 100, AngleUnit.DEGREES);
+        //port 5
+        clawWrist = new SimpleServo(hm, "wrist", -100, 100, AngleUnit.DEGREES);
 
 //        clawRotate.turnToAngle(0);
     }
@@ -26,13 +26,13 @@ public class ClawRotate implements Subsystem {
     public void periodic() {
         // add telemetry
         TelemetryPacket packet = new TelemetryPacket();
-        packet.put("Claw Pos", clawRotate.getPosition());
+        packet.put("Claw Pos", clawWrist.getPosition());
         dashboard.sendTelemetryPacket(packet);
     }
 
     public void setPower(double pos) {
         //Setting the clawIntake to constantly move
 //        clawRotate.turnToAngle(pos);
-        clawRotate.setPosition(pos);
+        clawWrist.setPosition(pos);
     }
 }

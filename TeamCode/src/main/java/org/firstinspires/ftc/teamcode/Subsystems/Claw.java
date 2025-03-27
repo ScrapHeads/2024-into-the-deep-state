@@ -7,25 +7,31 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.arcrobotics.ftclib.command.Subsystem;
 import com.arcrobotics.ftclib.hardware.ServoEx;
 import com.arcrobotics.ftclib.hardware.SimpleServo;
+import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.hardware.I2cDevice;
 import com.qualcomm.robotcore.hardware.Servo;
+
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 public class Claw implements Subsystem {
     //Setting clawIntake variable to be set in the Claw function
     private final ServoEx clawIntake;
     private final ServoEx clawIntake2;
 
-    private final DigitalChannel touchSensor;
+//    private final Rev2mDistanceSensor distanceSensor;
 
     public Claw() {
         //Linking clawIntake in the code to the servo on the robot
-        clawIntake = new SimpleServo(hm, "1", -1, 1);
-        clawIntake2 = new SimpleServo(hm, "2", -1, 1);
+        //port 1 right claw
+        clawIntake = new SimpleServo(hm, "rightClaw", -1, 1);
+        //port 2 left claw
+        clawIntake2 = new SimpleServo(hm, "leftClaw", -1, 1);
 
         clawIntake.turnToAngle(0);
         clawIntake2.turnToAngle(0);
 
-        touchSensor = hm.get(DigitalChannel.class, "touchClaw");
+//        distanceSensor = hm.get(Rev2mDistanceSensor.class, "distance");
     }
 
     @Override
@@ -38,10 +44,12 @@ public class Claw implements Subsystem {
     }
 
     public boolean getTouchSensor() {
-        TelemetryPacket packet = new TelemetryPacket();
-        packet.put("Touch State", touchSensor.getState());
-        dashboard.sendTelemetryPacket(packet);
-        return !touchSensor.getState();
+//        double distance = distanceSensor.getDistance(DistanceUnit.MM);
+//        TelemetryPacket packet = new TelemetryPacket();
+//        packet.put("Distance State", distance);
+//        dashboard.sendTelemetryPacket(packet);
+//        return distance <= 35;
+        return false;
     }
 
     public void setPower(double pos, double pos2) {

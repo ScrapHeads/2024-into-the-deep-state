@@ -8,7 +8,6 @@ import static org.firstinspires.ftc.teamcode.Constants.outtakeClawPower;
 import static org.firstinspires.ftc.teamcode.Constants.outtakeClawPower2;
 import static org.firstinspires.ftc.teamcode.Constants.placeClawPos;
 import static org.firstinspires.ftc.teamcode.Constants.tele;
-import static org.firstinspires.ftc.teamcode.Constants.usePIDRotationArm;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.roadrunner.AccelConstraint;
@@ -21,7 +20,6 @@ import com.acmerobotics.roadrunner.TurnConstraints;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.VelConstraint;
 import com.arcrobotics.ftclib.command.CommandOpMode;
-import com.arcrobotics.ftclib.command.InstantCommand;
 import com.arcrobotics.ftclib.command.ParallelCommandGroup;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.arcrobotics.ftclib.command.WaitCommand;
@@ -36,13 +34,14 @@ import org.firstinspires.ftc.teamcode.Commands.Automation.PlacePieceHBAuto2;
 import org.firstinspires.ftc.teamcode.Commands.Automation.PlacePieceHBAuto3;
 import org.firstinspires.ftc.teamcode.Commands.Automation.PlacePieceHBAuto4;
 import org.firstinspires.ftc.teamcode.Commands.FollowDrivePath;
-import org.firstinspires.ftc.teamcode.Commands.RotateClaw;
+import org.firstinspires.ftc.teamcode.Commands.RotateClawHorizontal;
+import org.firstinspires.ftc.teamcode.Commands.WristClawVert;
 import org.firstinspires.ftc.teamcode.Commands.intakeClaw;
-import org.firstinspires.ftc.teamcode.Commands.liftArmIntake;
 import org.firstinspires.ftc.teamcode.Subsystems.ArmLiftIntake;
 import org.firstinspires.ftc.teamcode.Subsystems.ArmRotateIntake;
 import org.firstinspires.ftc.teamcode.Subsystems.Claw;
-import org.firstinspires.ftc.teamcode.Subsystems.ClawRotate;
+import org.firstinspires.ftc.teamcode.Subsystems.ClawRotateHorizontal;
+import org.firstinspires.ftc.teamcode.Subsystems.ClawWristVert;
 import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain;
 
 import java.util.Arrays;
@@ -57,7 +56,9 @@ public class HighBasketAuto extends CommandOpMode {
     Claw claw = null;
 
     //Creating rotate claw
-    ClawRotate rClaw = null;
+    ClawRotateHorizontal rClaw = null;
+
+    ClawWristVert wClawV = null;
 
     //Creating armLiftIntake
     ArmLiftIntake armLiftIntake = null;
@@ -81,12 +82,16 @@ public class HighBasketAuto extends CommandOpMode {
         claw = new Claw();
         claw.register();
 
+        //Initializing the wrist claw
+        wClawV = new ClawWristVert();
+        wClawV.register();
+
         //Initializing the armRotateIntake
         armRotateIntake = new ArmRotateIntake();
         armRotateIntake.register();
 
         //Initializing the claw rotate
-        rClaw = new ClawRotate();
+        rClaw = new ClawRotateHorizontal();
         rClaw.register();
 
         //Initializing the armLiftIntake
@@ -153,7 +158,7 @@ public class HighBasketAuto extends CommandOpMode {
         schedule(new SequentialCommandGroup(
                     new ParallelCommandGroup(
                             new FollowDrivePath(drivetrain, placeStartSample.build()),
-                            new PlacePieceHBAuto(armLiftIntake, armRotateIntake, claw, rClaw)
+                            new PlacePieceHBAuto(armLiftIntake, armRotateIntake, claw, wClawV)
                     ),
 
                     new intakeClaw(claw, outtakeClawPower, outtakeClawPower2).withTimeout(400),
@@ -162,19 +167,19 @@ public class HighBasketAuto extends CommandOpMode {
 
 
                 new ParallelCommandGroup(
-                            new ArmPlaceToPickUp(armLiftIntake, armRotateIntake, claw, rClaw),
+                            new ArmPlaceToPickUp(armLiftIntake, armRotateIntake, claw, wClawV),
                             new FollowDrivePath(drivetrain, pickUpPreFirstBlock.build())
                     ),
 
                     new ParallelCommandGroup(
                           new FollowDrivePath(drivetrain, pickUpFirstBlock.build()),
                           new intakeClaw(claw, intakeClawPower, intakeClawPower2).withTimeout(1200).
-                                  andThen(new RotateClaw(rClaw, placeClawPos).withTimeout(50))
+                                  andThen(new RotateClawHorizontal(rClaw, placeClawPos).withTimeout(50))
                     ),
 
                     new ParallelCommandGroup(
                             new FollowDrivePath(drivetrain, placeFirstBlock.build()),
-                            new PlacePieceHBAuto2(armLiftIntake, armRotateIntake, claw, rClaw)
+                            new PlacePieceHBAuto2(armLiftIntake, armRotateIntake, claw, wClawV)
                     ),
 
                     new WaitCommand(200),
@@ -182,7 +187,7 @@ public class HighBasketAuto extends CommandOpMode {
                     new intakeClaw(claw, outtakeClawPower, outtakeClawPower2).withTimeout(400),
 
                 new ParallelCommandGroup(
-                            new ArmPlaceToPickUp2(armLiftIntake, armRotateIntake, claw, rClaw),
+                            new ArmPlaceToPickUp2(armLiftIntake, armRotateIntake, claw, wClawV),
                             new FollowDrivePath(drivetrain, turnToPickUpPreSecondBlock.build())
                                     .andThen(new FollowDrivePath(drivetrain, pickUpPreSecondBlock.build()))
                     ),
@@ -190,12 +195,12 @@ public class HighBasketAuto extends CommandOpMode {
                     new ParallelCommandGroup(
                         new FollowDrivePath(drivetrain, pickUpSecondBlock.build()),
                         new intakeClaw(claw, intakeClawPower, intakeClawPower2).withTimeout(1200).
-                                andThen(new RotateClaw(rClaw, placeClawPos).withTimeout(50))
+                                andThen(new RotateClawHorizontal(rClaw, placeClawPos).withTimeout(50))
                     ),
 
                     new ParallelCommandGroup(
                             new FollowDrivePath(drivetrain, placeSecondBlock.build()),
-                            new PlacePieceHBAuto3(armLiftIntake, armRotateIntake, claw, rClaw)
+                            new PlacePieceHBAuto3(armLiftIntake, armRotateIntake, claw, wClawV)
                     ),
 
                     new WaitCommand(200),
@@ -204,19 +209,19 @@ public class HighBasketAuto extends CommandOpMode {
 
                     new ParallelCommandGroup(
                             new FollowDrivePath(drivetrain, pickUpPreThirdBlock.build()),
-                            new ArmPlaceToPickUp3(armLiftIntake, armRotateIntake, claw, rClaw)
+                            new ArmPlaceToPickUp3(armLiftIntake, armRotateIntake, claw, wClawV)
                     ),
 
                     new FollowDrivePath(drivetrain, pickUpSpinPreThirdBlock.build()),
 
                     new ParallelCommandGroup(
                             new intakeClaw(claw, intakeClawPower, intakeClawPower2).withTimeout(2000).
-                                    andThen(new RotateClaw(rClaw, placeClawPos)),
+                                    andThen(new RotateClawHorizontal(rClaw, placeClawPos)),
                             new WaitCommand(100).andThen(new FollowDrivePath(drivetrain, pickUpThirdBlock.build()))
                     ),
 
                     new ParallelCommandGroup(
-                            new PlacePieceHBAuto4(armLiftIntake, armRotateIntake, claw, rClaw),
+                            new PlacePieceHBAuto4(armLiftIntake, armRotateIntake, claw, wClawV),
                             new FollowDrivePath(drivetrain, placeThirdBlock.build())
                     ),
 
@@ -224,7 +229,7 @@ public class HighBasketAuto extends CommandOpMode {
 
                     new intakeClaw(claw, outtakeClawPower, outtakeClawPower2).withTimeout(400),
 
-                    new ArmPlaceToPickUp4(armLiftIntake, armRotateIntake, claw, rClaw)
+                    new ArmPlaceToPickUp4(armLiftIntake, armRotateIntake, claw, wClawV)
                 )
         );
 

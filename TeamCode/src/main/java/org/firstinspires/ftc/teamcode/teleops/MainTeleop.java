@@ -22,25 +22,26 @@ import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Commands.Automation.AfterPlacePieceHBTele;
-import org.firstinspires.ftc.teamcode.Commands.Automation.ArmPlaceToPickUp;
 import org.firstinspires.ftc.teamcode.Commands.Automation.ArmResetAfterPickUp;
 import org.firstinspires.ftc.teamcode.Commands.Automation.AutoHang;
 import org.firstinspires.ftc.teamcode.Commands.Automation.PrePlacePieceHBTele;
 import org.firstinspires.ftc.teamcode.Commands.DriveContinous;
 import org.firstinspires.ftc.teamcode.Commands.OdPodLift;
 import org.firstinspires.ftc.teamcode.Commands.RotateArmIntake;
-import org.firstinspires.ftc.teamcode.Commands.RotateClaw;
+import org.firstinspires.ftc.teamcode.Commands.RotateClawHorizontal;
+import org.firstinspires.ftc.teamcode.Commands.WristClawVert;
 import org.firstinspires.ftc.teamcode.Commands.intakeClaw;
 import org.firstinspires.ftc.teamcode.Commands.liftArmIntake;
 import org.firstinspires.ftc.teamcode.Subsystems.ArmLiftIntake;
 import org.firstinspires.ftc.teamcode.Subsystems.ArmRotateIntake;
 import org.firstinspires.ftc.teamcode.Subsystems.Claw;
-import org.firstinspires.ftc.teamcode.Subsystems.ClawRotate;
+import org.firstinspires.ftc.teamcode.Subsystems.ClawRotateHorizontal;
+import org.firstinspires.ftc.teamcode.Subsystems.ClawWristVert;
 import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain;
 import org.firstinspires.ftc.teamcode.Subsystems.LiftOdPods;
 
 @TeleOp(name = "PracticeTeleop", group = "ScrapHeads")
-public class PracticeTeleop extends CommandOpMode {
+public class MainTeleop extends CommandOpMode {
     //Creating all the variables used in the code
 
     //Creating controller
@@ -54,7 +55,9 @@ public class PracticeTeleop extends CommandOpMode {
     Claw claw = null;
 
     //Creating rotate claw
-    ClawRotate rClaw = null;
+    ClawRotateHorizontal rClawH = null;
+
+    ClawWristVert wClawV = null;
 
     //Creating liftOdPods
 
@@ -86,10 +89,16 @@ public class PracticeTeleop extends CommandOpMode {
         CONTROLLER_TWO
     }
 
-    public enum clawStates {
+    public enum clawPickUpStates {
         PLACE,
         PICKUP,
-        DIVE
+        FLAT_PICKUP
+    }
+
+    public enum clawRotationStates {
+        ROTATION_RIGHT,
+//        ROTATION_LEFT,
+        ROTATION_CENTER
     }
 
     private PickUpStates currentPickUpState = PickUpStates.STATE_TWO;
@@ -98,7 +107,9 @@ public class PracticeTeleop extends CommandOpMode {
 
     private controllerStates currentController = controllerStates.CONTROLLER_TWO;
 
-    private clawStates currentClawState = clawStates.PLACE;
+    private clawPickUpStates currentClawPickUpState = clawPickUpStates.PLACE;
+
+    private clawRotationStates currentClawRotationState = clawRotationStates.ROTATION_RIGHT;
 
     private PlaceStates currentPlaceState = PlaceStates.AFTER_PLACE;
 
@@ -128,8 +139,12 @@ public class PracticeTeleop extends CommandOpMode {
         claw.register();
 
         //Initializing the claw rotate
-        rClaw = new ClawRotate();
-        rClaw.register();
+        rClawH = new ClawRotateHorizontal();
+        rClawH.register();
+
+        //Initializing the claw wrist
+        wClawV = new ClawWristVert();
+        wClawV.register();
 
         //Initializing the odPod lift
         liftOdPods = new LiftOdPods();
@@ -178,9 +193,9 @@ public class PracticeTeleop extends CommandOpMode {
 
         new Trigger(() -> isClawTouched)
                 .whileActiveOnce(new SequentialCommandGroup(
-                        new ArmResetAfterPickUp(armLiftIntake, armRotateIntake, claw, rClaw),
+                        new ArmResetAfterPickUp(armLiftIntake, armRotateIntake, claw, wClawV),
                         new InstantCommand(() -> isSlowMode = false),
-                        new InstantCommand(() -> currentClawState = clawStates.PLACE),
+                        new InstantCommand(() -> currentClawPickUpState = clawPickUpStates.PLACE),
                         new InstantCommand(() -> isClawTouched = false)
                         ));
 
@@ -215,7 +230,7 @@ public class PracticeTeleop extends CommandOpMode {
                 );
         new Trigger(() -> currentPlaceState == PlaceStates.PRE_PLACE)
                 .whenActive(
-                    new PrePlacePieceHBTele(armLiftIntake, armRotateIntake, claw, rClaw)
+                    new PrePlacePieceHBTele(armLiftIntake, armRotateIntake, claw, rClawH, wClawV)
                             .andThen(
                                     new InstantCommand(() -> {isSlowMode = true;})
                             )
@@ -224,28 +239,38 @@ public class PracticeTeleop extends CommandOpMode {
                 .whenActive(
                         new ParallelCommandGroup(
                                 new InstantCommand(() -> {isSlowMode = false;}),
-                                new AfterPlacePieceHBTele(armLiftIntake, armRotateIntake, claw, rClaw)
+                                new AfterPlacePieceHBTele(armLiftIntake, armRotateIntake, claw, wClawV)
                         )
                 );
 
+        driver.getGamepadButton(X)
+                .whenPressed(new InstantCommand(this::advanceRotationClawStates));
 
+        new Trigger(() -> currentClawRotationState == clawRotationStates.ROTATION_RIGHT)
+                .whenActive(
+                  new RotateClawHorizontal(rClawH, rightClawPos90)
+                );
+        new Trigger(() -> currentClawRotationState == clawRotationStates.ROTATION_CENTER)
+                .whenActive(
+                  new RotateClawHorizontal(rClawH, centerClawPos)
+                );
 
         driver.getGamepadButton(LEFT_BUMPER)
                 .whenPressed(new InstantCommand(this::advancedClawStates));
 
-        new Trigger(() -> currentClawState == clawStates.PLACE)
+        new Trigger(() -> currentClawPickUpState == clawPickUpStates.PLACE)
                 .whenActive(
-                        new RotateClaw(rClaw, placeClawPos)
+                        new WristClawVert(wClawV, placeClawPos)
                 );
 
-        new Trigger(() -> currentClawState == clawStates.PICKUP)
+        new Trigger(() -> currentClawPickUpState == clawPickUpStates.PICKUP)
                 .whenActive(
-                        new RotateClaw(rClaw, pickUpClawPos)
+                        new WristClawVert(wClawV, pickUpClawPos)
                 );
 
-        new Trigger(() -> currentClawState == clawStates.DIVE)
+        new Trigger(() -> currentClawPickUpState == clawPickUpStates.FLAT_PICKUP)
                 .whenActive(
-                        new RotateClaw(rClaw, pickUpDive)
+                        new WristClawVert(wClawV, pickUpHighClawPos)
                 );
 
 
@@ -264,10 +289,10 @@ public class PracticeTeleop extends CommandOpMode {
                                 new RotateArmIntake(armRotateIntake, 1, PICK_UP_ROTATE),
                                 new WaitUntilCommand(() -> armRotateIntake.isAtPosition(3)),
                                 new intakeClaw(claw, outtakeClawPower, outtakeClawPower2).withTimeout(0),
-                                new RotateClaw(rClaw, pickUpClawPos),
+                                new WristClawVert(wClawV, pickUpClawPos),
                                 new liftArmIntake(armLiftIntake, 1, PICK_UP_LIFT),
                                 new intakeClaw(claw, intakeClawPower, intakeClawPower2).andThen(
-                                        new ArmResetAfterPickUp(armLiftIntake, armRotateIntake, claw, rClaw),
+                                        new ArmResetAfterPickUp(armLiftIntake, armRotateIntake, claw, wClawV),
                                         new InstantCommand(() -> isSlowMode = false)
                                 )
                         )
@@ -278,7 +303,6 @@ public class PracticeTeleop extends CommandOpMode {
                         new ParallelCommandGroup(
                                 new OdPodLift(liftOdPods, odPodLeftRetract, odPodRightRetract).withTimeout(500),
                                 new AutoHang(armRotateIntake)
-                                //Add automated hang
                 )
                 );
 
@@ -289,9 +313,9 @@ public class PracticeTeleop extends CommandOpMode {
 
         driver.getGamepadButton(A)
                 .whenPressed( new SequentialCommandGroup(
-                        new intakeClaw(claw, intakeClawPower, intakeClawPower2),
-                        new InstantCommand(() -> isClawTouched = true),
-                        new RotateClaw(rClaw, placeClawPos)
+                        new intakeClaw(claw, intakeClawPower, intakeClawPower2)
+//                        new InstantCommand(() -> isClawTouched = true),
+//                        new WristClawVert(wClawV, placeClawPos)
                 ))
 //                .whenPressed(new RotateClaw(rClaw, pickUpClawPos))
                 .whenReleased(new intakeClaw(claw, 0, 0));
@@ -340,15 +364,15 @@ public class PracticeTeleop extends CommandOpMode {
     }
 
     private void advancedClawStates() {
-        switch (currentClawState) {
+        switch (currentClawPickUpState) {
             case PICKUP:
-                currentClawState = clawStates.DIVE;
+                currentClawPickUpState = clawPickUpStates.FLAT_PICKUP;
                 break;
             case PLACE:
-                currentClawState = clawStates.PICKUP;
+                currentClawPickUpState = clawPickUpStates.PICKUP;
                 break;
-            case DIVE:
-                currentClawState = clawStates.PLACE;
+            case FLAT_PICKUP:
+                currentClawPickUpState = clawPickUpStates.PLACE;
                 break;
         }
     }
@@ -360,6 +384,18 @@ public class PracticeTeleop extends CommandOpMode {
                 break;
             case AFTER_PLACE:
                 currentPlaceState = PlaceStates.PRE_PLACE;
+                break;
+        }
+    }
+
+    private void advanceRotationClawStates() {
+        switch (currentClawRotationState) {
+            case ROTATION_CENTER:
+                currentClawRotationState = clawRotationStates.ROTATION_RIGHT;
+                break;
+            case ROTATION_RIGHT:
+                currentClawRotationState = clawRotationStates.ROTATION_CENTER;
+                break;
         }
     }
 }
