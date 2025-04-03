@@ -34,11 +34,14 @@ public class ArmLiftIntake implements Subsystem {
     public enum controlState {
         PLACE_LIFT(22),
         PICK_UP_LIFT_FLOOR(6),
+        PICK_UP_LIFT_FLOOR_LOW(6.5),
         PICK_UP_LIFT(11),
         PICK_UP_LIFT_HIGH(4.75),
         RESET_LIFT(0),
         MANUAL_LIFT(-2),
         MANUAL_REVERSE(-3),
+        PRE_CLIP_LIFT(2.87),
+        CLIP_LIFT(1.5),
         SWAP_STATES_LIFT(-60),
         HOLD_LIFT(.1);
 
@@ -141,6 +144,9 @@ public class ArmLiftIntake implements Subsystem {
             case PICK_UP_LIFT_FLOOR:
                 pidController.setSetpoint(controlState.PICK_UP_LIFT_FLOOR.pos);
                 break;
+            case PICK_UP_LIFT_FLOOR_LOW:
+                pidController.setSetpoint(controlState.PICK_UP_LIFT_FLOOR_LOW.pos);
+                break;
             case PICK_UP_LIFT_HIGH:
                 pidController.setSetpoint(controlState.PICK_UP_LIFT_HIGH.pos);
                 break;
@@ -150,6 +156,11 @@ public class ArmLiftIntake implements Subsystem {
             case RESET_LIFT:
                 pidController.setSetpoint(controlState.RESET_LIFT.pos);
                 break;
+            case PRE_CLIP_LIFT:
+                pidController.setSetpoint(controlState.PRE_CLIP_LIFT.pos);
+                break;
+            case CLIP_LIFT:
+                pidController.setSetpoint(controlState.CLIP_LIFT.pos);
         }
 
         double currentExtension = getCurrentExtensionIn();
@@ -229,6 +240,9 @@ public class ArmLiftIntake implements Subsystem {
         else if (currentState == controlState.PICK_UP_LIFT_FLOOR) {
             pidController.setSetpoint(controlState.PICK_UP_LIFT_FLOOR.pos);
         }
+        else if (currentState == controlState.PICK_UP_LIFT_FLOOR_LOW) {
+            pidController.setSetpoint(controlState.PICK_UP_LIFT_FLOOR_LOW.pos);
+        }
         else if (currentState == controlState.PICK_UP_LIFT) {
             pidController.setSetpoint(controlState.PICK_UP_LIFT.pos);
         }
@@ -237,6 +251,12 @@ public class ArmLiftIntake implements Subsystem {
         }
         else if (currentState == controlState.RESET_LIFT) {
             pidController.setSetpoint(controlState.RESET_LIFT.pos);
+        }
+        else if (currentState == controlState.CLIP_LIFT) {
+            pidController.setSetpoint(controlState.CLIP_LIFT.pos);
+        }
+        else if (currentState == controlState.PRE_CLIP_LIFT) {
+            pidController.setSetpoint(controlState.PRE_CLIP_LIFT.pos);
         }
         else { // power is 0
             armLiftIntake.set(0);

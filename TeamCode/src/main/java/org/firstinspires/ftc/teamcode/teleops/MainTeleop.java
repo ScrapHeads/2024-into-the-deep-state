@@ -24,6 +24,9 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.Commands.Automation.AfterPlacePieceHBTele;
 import org.firstinspires.ftc.teamcode.Commands.Automation.ArmResetAfterPickUp;
 import org.firstinspires.ftc.teamcode.Commands.Automation.AutoHang;
+import org.firstinspires.ftc.teamcode.Commands.Automation.ClipStageOneTele;
+import org.firstinspires.ftc.teamcode.Commands.Automation.ClipStageTwoTele;
+import org.firstinspires.ftc.teamcode.Commands.Automation.PickUpClip;
 import org.firstinspires.ftc.teamcode.Commands.Automation.PrePlacePieceHBTele;
 import org.firstinspires.ftc.teamcode.Commands.DriveContinous;
 import org.firstinspires.ftc.teamcode.Commands.OdPodLift;
@@ -46,7 +49,7 @@ public class MainTeleop extends CommandOpMode {
 
     //Creating controller
     GamepadEx driver = null;
-//    GamepadEx driver2 = null;
+    GamepadEx driver2 = null;
 
     //Creating drivetrain
     Drivetrain drivetrain = null;
@@ -76,7 +79,8 @@ public class MainTeleop extends CommandOpMode {
 
     public enum ClipperStates {
         STATE_ONE,
-        STATE_TWO
+        STATE_TWO,
+        STATE_THREE
     }
 
     public enum PlaceStates {
@@ -105,7 +109,7 @@ public class MainTeleop extends CommandOpMode {
 
     private ClipperStates currentClipperStates = ClipperStates.STATE_TWO;
 
-    private controllerStates currentController = controllerStates.CONTROLLER_TWO;
+    private controllerStates currentController = controllerStates.CONTROLLER_ONE;
 
     private clawPickUpStates currentClawPickUpState = clawPickUpStates.PLACE;
 
@@ -128,7 +132,7 @@ public class MainTeleop extends CommandOpMode {
         driver = new GamepadEx(gamepad1);
 
         //Initializing the controller 2 for inputs in assignControls
-//        driver2 = new GamepadEx(gamepad2);
+        driver2 = new GamepadEx(gamepad2);
 
         // Might need to change pose2d for field centric reasons, will need to change for autos
         drivetrain = new Drivetrain(hardwareMap, new Pose2d(0, 0, 0));
@@ -192,13 +196,14 @@ public class MainTeleop extends CommandOpMode {
                 .whileActiveOnce(new DriveContinous(drivetrain, driver, 1.0));
 
         new Trigger(() -> isClawTouched)
-                .whileActiveOnce(new SequentialCommandGroup(
-                        new ArmResetAfterPickUp(armLiftIntake, armRotateIntake, claw, wClawV),
-                        new InstantCommand(() -> isSlowMode = false),
-                        new InstantCommand(() -> currentClawPickUpState = clawPickUpStates.PLACE),
-                        new InstantCommand(() -> isClawTouched = false)
-                        ))
-        ;
+                .whileActiveOnce(
+                        new SequentialCommandGroup(
+                                new ArmResetAfterPickUp(armLiftIntake, armRotateIntake, claw, wClawV),
+                                new InstantCommand(() -> isSlowMode = false),
+                                new InstantCommand(() -> currentClawPickUpState = clawPickUpStates.PLACE),
+                                new InstantCommand(() -> isClawTouched = false)
+                    )
+                );
 
         //Statements for in game functions controller one
 
@@ -211,6 +216,60 @@ public class MainTeleop extends CommandOpMode {
                 .whenActive(new liftArmIntake(armLiftIntake, -.75, MANUAL_LIFT))
                 .whenInactive(new liftArmIntake(armLiftIntake, 0, HOLD_LIFT));
 
+        //Input for auto place HB
+        new Trigger(() -> driver.gamepad.y && currentController == controllerStates.CONTROLLER_ONE)
+                .whileActiveOnce(
+                        new InstantCommand(this::advancePlaceStates)
+                );
+
+        new Trigger(() -> currentPlaceState == PlaceStates.PRE_PLACE)
+                .whenActive(
+                        new PrePlacePieceHBTele(armLiftIntake, armRotateIntake, claw, rClawH, wClawV)
+                                .andThen(
+                                        new InstantCommand(() -> {isSlowMode = true;})
+                                )
+                );
+        new Trigger(() -> currentPlaceState == PlaceStates.AFTER_PLACE)
+                .whenActive(
+                        new ParallelCommandGroup(
+                                new InstantCommand(() -> {isSlowMode = false;}),
+                                new AfterPlacePieceHBTele(armLiftIntake, armRotateIntake, claw, wClawV)
+                        )
+                );
+
+        //Input for auto place Clipping
+        new Trigger(() -> driver.gamepad.y && currentController == controllerStates.CONTROLLER_TWO)
+                .whileActiveOnce(
+                        new InstantCommand(this::advancedClipperStates)
+                );
+
+        new Trigger(() -> currentClipperStates == ClipperStates.STATE_ONE)
+                .whenActive(
+                        new ParallelCommandGroup(
+                                new InstantCommand(() -> {isSlowMode = true;}),
+                                new PickUpClip(armLiftIntake, armRotateIntake, claw, wClawV, rClawH).andThen(
+                                        new InstantCommand(() -> {isSlowMode = false;})
+                                )
+                        )
+                );
+        new Trigger(() -> currentClipperStates == ClipperStates.STATE_TWO)
+                .whenActive(
+                        new ParallelCommandGroup(
+                                new ClipStageOneTele(armLiftIntake, armRotateIntake, claw, wClawV, rClawH)
+                        )
+                );
+
+        new Trigger(() -> currentClipperStates == ClipperStates.STATE_THREE)
+                .whenActive(
+                        new ParallelCommandGroup(
+                                new ClipStageTwoTele(armLiftIntake, armRotateIntake, claw, wClawV, rClawH)
+                        )
+                );
+
+        driver2.getGamepadButton(A)
+                        .whenPressed(new InstantCommand(this::whatController)
+                        );
+
         //Inputs for the armRotateIntake
         driver.getGamepadButton(DPAD_LEFT)
                 .whenPressed(new RotateArmIntake(armRotateIntake, 0.75, MANUAL_ROTATE))
@@ -221,28 +280,10 @@ public class MainTeleop extends CommandOpMode {
 
         //Pid controls
 
-        driver.getGamepadButton(Y)
-                .whenPressed(
-                        new InstantCommand(this::advancePlaceStates)
-//                        new ParallelCommandGroup(
-//                                new PrePlacePieceHBTele(armLiftIntake, armRotateIntake, claw, rClaw),
-//                                new InstantCommand(() -> {isSlowMode = true;})
-//                        ).whenFinished(() -> {isSlowMode = false;})
-                );
-        new Trigger(() -> currentPlaceState == PlaceStates.PRE_PLACE)
-                .whenActive(
-                    new PrePlacePieceHBTele(armLiftIntake, armRotateIntake, claw, rClawH, wClawV)
-                            .andThen(
-                                    new InstantCommand(() -> {isSlowMode = true;})
-                            )
-                );
-        new Trigger(() -> currentPlaceState == PlaceStates.AFTER_PLACE)
-                .whenActive(
-                        new ParallelCommandGroup(
-                                new InstantCommand(() -> {isSlowMode = false;}),
-                                new AfterPlacePieceHBTele(armLiftIntake, armRotateIntake, claw, wClawV)
-                        )
-                );
+//        driver.getGamepadButton(Y)
+//                .whenPressed(
+//                        new InstantCommand(this::advancePlaceStates)
+//                );
 
         driver.getGamepadButton(X)
                 .whenPressed(new InstantCommand(this::advanceRotationClawStates));
@@ -299,9 +340,10 @@ public class MainTeleop extends CommandOpMode {
 
         driver.getGamepadButton(A)
                 .whenPressed( new SequentialCommandGroup(
-                        new intakeClaw(claw, intakeClawPower, intakeClawPower2),
-                        new RotateClawHorizontal(rClawH, centerClawPos),
-                        new InstantCommand(() -> isClawTouched = true)
+                        new intakeClaw(claw, intakeClawPower, intakeClawPower2)
+                                .andThen(
+                                        new InstantCommand(() -> isClawTouched = true)
+                                )
                         )
                 )
 //                .whenPressed(new RotateClaw(rClaw, pickUpClawPos))
@@ -334,6 +376,9 @@ public class MainTeleop extends CommandOpMode {
                 currentClipperStates = ClipperStates.STATE_TWO;
                 break;
             case STATE_TWO:
+                currentClipperStates = ClipperStates.STATE_THREE;
+                break;
+            case STATE_THREE:
                 currentClipperStates = ClipperStates.STATE_ONE;
                 break;
         };
