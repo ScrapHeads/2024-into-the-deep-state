@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.auto;
 
+import static org.firstinspires.ftc.teamcode.Constants.centerClawPos;
 import static org.firstinspires.ftc.teamcode.Constants.dashboard;
 import static org.firstinspires.ftc.teamcode.Constants.hm;
 import static org.firstinspires.ftc.teamcode.Constants.intakeClawPower;
@@ -120,25 +121,25 @@ public class HighBasketAuto extends CommandOpMode {
 //                .splineToLinearHeading(new Pose2d(16, 24, Math.toRadians(-45)), Math.toRadians(0));
 
         TrajectoryActionBuilder placeStartSample = drivetrain.actionBuilder(new Pose2d(0, 0, Math.toRadians(0)), turnConstraintsSlow, velConstraintSlow, accelConstraintSlow)
-                .strafeToLinearHeading(new Vector2d(16, 25), Math.toRadians(-47));
+                .strafeToLinearHeading(new Vector2d(16, 20), Math.toRadians(-47));
 
-        TrajectoryActionBuilder pickUpPreFirstBlock = drivetrain.actionBuilder(new Pose2d(16, 25, Math.toRadians(-47)), turnConstraintsSlow, velConstraintSlow, accelConstraintSlow)
-                .strafeToLinearHeading(new Vector2d(12, 9), Math.toRadians(4));
+        TrajectoryActionBuilder pickUpPreFirstBlock = drivetrain.actionBuilder(new Pose2d(16, 20, Math.toRadians(-47)), turnConstraintsSlow, velConstraintSlow, accelConstraintSlow)
+                .strafeToLinearHeading(new Vector2d(9, 9), Math.toRadians(0));
 
-        TrajectoryActionBuilder pickUpFirstBlock = drivetrain.actionBuilder(new Pose2d(12, 9, Math.toRadians(4)))
-                .strafeToLinearHeading(new Vector2d(19, 8.5), Math.toRadians(2));
+        TrajectoryActionBuilder pickUpFirstBlock = drivetrain.actionBuilder(new Pose2d(9, 9, Math.toRadians(0)))
+                .strafeToLinearHeading(new Vector2d(19, 9.5), Math.toRadians(0));
 
-        TrajectoryActionBuilder placeFirstBlock = drivetrain.actionBuilder(new Pose2d(19, 8.5, Math.toRadians(2)), turnConstraintsSlow, velConstraintSlow, accelConstraintSlow)
-                .strafeToLinearHeading(new Vector2d(17, 24), Math.toRadians(-45));
+        TrajectoryActionBuilder placeFirstBlock = drivetrain.actionBuilder(new Pose2d(19, 9.5, Math.toRadians(0)), turnConstraintsSlow, velConstraintSlow, accelConstraintSlow)
+                .strafeToLinearHeading(new Vector2d(19, 22), Math.toRadians(-45));
 
-        TrajectoryActionBuilder turnToPickUpPreSecondBlock = drivetrain.actionBuilder(new Pose2d(17, 24, Math.toRadians(-45)))
+        TrajectoryActionBuilder turnToPickUpPreSecondBlock = drivetrain.actionBuilder(new Pose2d(19, 22, Math.toRadians(-45)),  turnConstraintsSlow, velConstraintSlow, accelConstraintSlow)
                 .turnTo(Math.toRadians(0));
 
-        TrajectoryActionBuilder pickUpPreSecondBlock = drivetrain.actionBuilder(new Pose2d(17.5, 24, Math.toRadians(0)))
-                .strafeToLinearHeading(new Vector2d(17, 20), Math.toRadians(0));
+        TrajectoryActionBuilder pickUpPreSecondBlock = drivetrain.actionBuilder(new Pose2d(19, 22, Math.toRadians(0)))
+                .strafeToLinearHeading(new Vector2d(17, 21), Math.toRadians(-4));
 
-        TrajectoryActionBuilder pickUpSecondBlock = drivetrain.actionBuilder(new Pose2d(17, 20, Math.toRadians(0)))
-                .strafeToLinearHeading(new Vector2d(22, 21), Math.toRadians(0));
+        TrajectoryActionBuilder pickUpSecondBlock = drivetrain.actionBuilder(new Pose2d(17, 21, Math.toRadians(-4)))
+                .strafeToLinearHeading(new Vector2d(22, 21), Math.toRadians(-4));
 
         TrajectoryActionBuilder placeSecondBlock = drivetrain.actionBuilder(new Pose2d(22, 21, Math.toRadians(0)), turnConstraintsSlow, velConstraintSlow, accelConstraintSlow)
                 .strafeToLinearHeading(new Vector2d(21, 26), Math.toRadians(-47));
@@ -158,15 +159,15 @@ public class HighBasketAuto extends CommandOpMode {
         schedule(new SequentialCommandGroup(
                     new ParallelCommandGroup(
                             new FollowDrivePath(drivetrain, placeStartSample.build()),
-                            new PlacePieceHBAuto(armLiftIntake, armRotateIntake, claw, wClawV)
+                            new PlacePieceHBAuto(armLiftIntake, armRotateIntake, claw, wClawV),
+                            new RotateClawHorizontal(rClaw, centerClawPos)
                     ),
 
                     new intakeClaw(claw, outtakeClawPower, outtakeClawPower2).withTimeout(400),
 
-                new WaitCommand(200),
+                    new WaitCommand(200),
 
-
-                new ParallelCommandGroup(
+                    new ParallelCommandGroup(
                             new ArmPlaceToPickUp(armLiftIntake, armRotateIntake, claw, wClawV),
                             new FollowDrivePath(drivetrain, pickUpPreFirstBlock.build())
                     ),
@@ -174,62 +175,62 @@ public class HighBasketAuto extends CommandOpMode {
                     new ParallelCommandGroup(
                           new FollowDrivePath(drivetrain, pickUpFirstBlock.build()),
                           new intakeClaw(claw, intakeClawPower, intakeClawPower2).withTimeout(1200).
-                                  andThen(new RotateClawHorizontal(rClaw, placeClawPos).withTimeout(50))
+                                  andThen(new WristClawVert(wClawV, placeClawPos).withTimeout(50))
                     ),
-
+//
                     new ParallelCommandGroup(
                             new FollowDrivePath(drivetrain, placeFirstBlock.build()),
                             new PlacePieceHBAuto2(armLiftIntake, armRotateIntake, claw, wClawV)
                     ),
-
+//
                     new WaitCommand(200),
 
                     new intakeClaw(claw, outtakeClawPower, outtakeClawPower2).withTimeout(400),
-
+//
                 new ParallelCommandGroup(
                             new ArmPlaceToPickUp2(armLiftIntake, armRotateIntake, claw, wClawV),
                             new FollowDrivePath(drivetrain, turnToPickUpPreSecondBlock.build())
                                     .andThen(new FollowDrivePath(drivetrain, pickUpPreSecondBlock.build()))
                     ),
-
+//
                     new ParallelCommandGroup(
                         new FollowDrivePath(drivetrain, pickUpSecondBlock.build()),
                         new intakeClaw(claw, intakeClawPower, intakeClawPower2).withTimeout(1200).
-                                andThen(new RotateClawHorizontal(rClaw, placeClawPos).withTimeout(50))
-                    ),
-
-                    new ParallelCommandGroup(
-                            new FollowDrivePath(drivetrain, placeSecondBlock.build()),
-                            new PlacePieceHBAuto3(armLiftIntake, armRotateIntake, claw, wClawV)
-                    ),
-
-                    new WaitCommand(200),
-
-                    new intakeClaw(claw, outtakeClawPower, outtakeClawPower2).withTimeout(400),
-
-                    new ParallelCommandGroup(
-                            new FollowDrivePath(drivetrain, pickUpPreThirdBlock.build()),
-                            new ArmPlaceToPickUp3(armLiftIntake, armRotateIntake, claw, wClawV)
-                    ),
-
-                    new FollowDrivePath(drivetrain, pickUpSpinPreThirdBlock.build()),
-
-                    new ParallelCommandGroup(
-                            new intakeClaw(claw, intakeClawPower, intakeClawPower2).withTimeout(2000).
-                                    andThen(new RotateClawHorizontal(rClaw, placeClawPos)),
-                            new WaitCommand(100).andThen(new FollowDrivePath(drivetrain, pickUpThirdBlock.build()))
-                    ),
-
-                    new ParallelCommandGroup(
-                            new PlacePieceHBAuto4(armLiftIntake, armRotateIntake, claw, wClawV),
-                            new FollowDrivePath(drivetrain, placeThirdBlock.build())
-                    ),
-
-                    new WaitCommand(200),
-
-                    new intakeClaw(claw, outtakeClawPower, outtakeClawPower2).withTimeout(400),
-
-                    new ArmPlaceToPickUp4(armLiftIntake, armRotateIntake, claw, wClawV)
+                                andThen(new WristClawVert(wClawV, placeClawPos).withTimeout(50))
+                    )
+//
+//                    new ParallelCommandGroup(
+//                            new FollowDrivePath(drivetrain, placeSecondBlock.build()),
+//                            new PlacePieceHBAuto3(armLiftIntake, armRotateIntake, claw, wClawV)
+//                    ),
+//
+//                    new WaitCommand(200),
+//
+//                    new intakeClaw(claw, outtakeClawPower, outtakeClawPower2).withTimeout(400),
+//
+//                    new ParallelCommandGroup(
+//                            new FollowDrivePath(drivetrain, pickUpPreThirdBlock.build()),
+//                            new ArmPlaceToPickUp3(armLiftIntake, armRotateIntake, claw, wClawV)
+//                    ),
+//
+//                    new FollowDrivePath(drivetrain, pickUpSpinPreThirdBlock.build()),
+//
+//                    new ParallelCommandGroup(
+//                            new intakeClaw(claw, intakeClawPower, intakeClawPower2).withTimeout(2000).
+//                                    andThen(new WristClawVert(wClawV, placeClawPos).withTimeout(50)),
+//                            new WaitCommand(100).andThen(new FollowDrivePath(drivetrain, pickUpThirdBlock.build()))
+//                    ),
+//
+//                    new ParallelCommandGroup(
+//                            new PlacePieceHBAuto4(armLiftIntake, armRotateIntake, claw, wClawV),
+//                            new FollowDrivePath(drivetrain, placeThirdBlock.build())
+//                    ),
+//
+//                    new WaitCommand(200),
+//
+//                    new intakeClaw(claw, outtakeClawPower, outtakeClawPower2).withTimeout(400),
+//
+//                    new ArmPlaceToPickUp4(armLiftIntake, armRotateIntake, claw, wClawV)
                 )
         );
 

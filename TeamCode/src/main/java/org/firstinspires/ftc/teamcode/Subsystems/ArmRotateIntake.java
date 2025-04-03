@@ -28,7 +28,7 @@ public class ArmRotateIntake implements Subsystem {
 
 
     //TODO Not Tuned; Tune
-    private final PIDController pidController = new PIDController(0.026, 0, 0.0001);
+    private final PIDController pidController = new PIDController(0.026, 0.005, 0.0001);
 
     private final PIDController pidControllerLiftRotIncrease = new PIDController(0.14, 0, 0);
 
@@ -41,7 +41,8 @@ public class ArmRotateIntake implements Subsystem {
         PLACE_ROTATE(-179),
         HANG_ROTATE(-178),
         HB_AFTER(165),
-        PICK_UP_ROTATE(63),
+        PICK_UP_ROTATE_FLOOR(63),
+        PICK_UP_ROTATE(94.5),
         MANUAL_ROTATE(-10),
         MANUAL_ROTATE_REVERSE(-11),
         SWAP_STATES_ROTATE(-55),
@@ -140,7 +141,13 @@ public class ArmRotateIntake implements Subsystem {
                 armRotateIntake2.set(manualPower);
 //                setPower(manualPower, controlState.MANUAL_ROTATE_REVERSE);
                 return;
-            case PICK_UP_ROTATE:
+            case PICK_UP_ROTATE_FLOOR:
+//                pickUpPidController.setSetPoint(controlState.PICK_UP_ROTATE.pos);
+//                isProfiled = true;
+//                pickUpPidController.setGoal(controlState.PICK_UP_ROTATE.pos);
+                pidController.setSetpoint(controlState.PICK_UP_ROTATE_FLOOR.pos);
+                break;
+                case PICK_UP_ROTATE:
 //                pickUpPidController.setSetPoint(controlState.PICK_UP_ROTATE.pos);
 //                isProfiled = true;
 //                pickUpPidController.setGoal(controlState.PICK_UP_ROTATE.pos);
@@ -219,6 +226,9 @@ public class ArmRotateIntake implements Subsystem {
         }
         else if (currentState == controlState.PRE_PICK_UP_ROTATE) {
             pickUpPidController.setGoal(controlState.PRE_PICK_UP_ROTATE.pos);
+        }
+        else if (currentState == controlState.PICK_UP_ROTATE_FLOOR) {
+            pickUpPidController.setGoal(controlState.PICK_UP_ROTATE_FLOOR.pos);
         }
         else if (currentState == controlState.PICK_UP_ROTATE) {
             pickUpPidController.setGoal(controlState.PICK_UP_ROTATE.pos);

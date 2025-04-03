@@ -19,7 +19,7 @@ public class Claw implements Subsystem {
     private final ServoEx clawIntake;
     private final ServoEx clawIntake2;
 
-//    private final Rev2mDistanceSensor distanceSensor;
+    private final Rev2mDistanceSensor distanceSensor;
 
     public Claw() {
         //Linking clawIntake in the code to the servo on the robot
@@ -31,7 +31,7 @@ public class Claw implements Subsystem {
         clawIntake.turnToAngle(0);
         clawIntake2.turnToAngle(0);
 
-//        distanceSensor = hm.get(Rev2mDistanceSensor.class, "distance");
+        distanceSensor = hm.get(Rev2mDistanceSensor.class, "distance");
     }
 
     @Override
@@ -41,15 +41,20 @@ public class Claw implements Subsystem {
 //        packet.put("Touch Sensor",touchSensor.getState());
         packet.put("Claw Pos", clawIntake.getPosition());
 //        dashboard.sendTelemetryPacket(packet);
+
+        double distance = distanceSensor.getDistance(DistanceUnit.MM);
+        TelemetryPacket sock = new TelemetryPacket();
+        sock.put("Distance State", distance);
+        dashboard.sendTelemetryPacket(sock);
     }
 
     public boolean getTouchSensor() {
-//        double distance = distanceSensor.getDistance(DistanceUnit.MM);
-//        TelemetryPacket packet = new TelemetryPacket();
-//        packet.put("Distance State", distance);
-//        dashboard.sendTelemetryPacket(packet);
-//        return distance <= 35;
-        return false;
+        double distance = distanceSensor.getDistance(DistanceUnit.MM);
+        TelemetryPacket packet = new TelemetryPacket();
+        packet.put("Distance State", distance);
+        dashboard.sendTelemetryPacket(packet);
+        return distance <= 70;
+//        return false;
     }
 
     public void setPower(double pos, double pos2) {

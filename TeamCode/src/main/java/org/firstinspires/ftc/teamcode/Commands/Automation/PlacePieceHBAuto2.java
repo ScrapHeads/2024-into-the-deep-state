@@ -26,7 +26,7 @@ public class PlacePieceHBAuto2 extends SequentialCommandGroup {
         addCommands(
                 new RotateArmIntake(rotation, 1, HANG_ROTATE),
                 new WaitCommand(1300),
-                new WaitUntilCommand(() -> rotation.isAtPosition(2)),
+                new WaitUntilCommand(() -> rotation.isAtPosition(5)),
                 new liftArmIntake(lift, 1, PLACE_LIFT),
                 new intakeClaw(claw, intakeClawPower, intakeClawPower2).withTimeout(200),
                 new WaitUntilCommand(() -> lift.isAtPosition(10)),

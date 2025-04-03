@@ -26,7 +26,7 @@ public class Constants {
 //    public static double outOfTheWay = .10;
 //    public static double pickUpDive = .17;
     public static double pickUpClawPos = 0.25;
-    public static double pickUpHighClawPos = .65;
+    public static double pickUpHighClawPos = .62;
 
     //Originally 1
     public static double placeClawPos = .9;

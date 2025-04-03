@@ -10,8 +10,6 @@ import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 
 import org.firstinspires.ftc.teamcode.util.PID.PIDController;
-import org.firstinspires.ftc.teamcode.util.PID.ProfiledPIDController;
-import org.firstinspires.ftc.teamcode.util.PID.TrapezoidProfile;
 
 import java.util.function.Supplier;
 
@@ -19,7 +17,7 @@ public class ArmLiftIntake implements Subsystem {
     private static final double ticksToInches = 31;
 
     //TODO Not Tuned; Tune
-    private final PIDController pidController = new PIDController(0.15, 0, 0);
+    private final PIDController pidController = new PIDController(0.15, 0.0001, 0);
 
     private final PIDController pidControllerFloor = new PIDController(0.05, 0, 0);
 
@@ -35,7 +33,8 @@ public class ArmLiftIntake implements Subsystem {
 
     public enum controlState {
         PLACE_LIFT(22),
-        PICK_UP_LIFT(4.8),
+        PICK_UP_LIFT_FLOOR(6),
+        PICK_UP_LIFT(11),
         PICK_UP_LIFT_HIGH(4.75),
         RESET_LIFT(0),
         MANUAL_LIFT(-2),
@@ -78,7 +77,7 @@ public class ArmLiftIntake implements Subsystem {
         armLiftIntake.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         armLiftIntake2.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
 
-        pidController.enableContinuousInput(-100, 180);
+//        pidController.enableContinuousInput(-100, 180);
 
         pidController.setTolerance(.15);
 
@@ -139,11 +138,14 @@ public class ArmLiftIntake implements Subsystem {
             case PLACE_LIFT:
                 pidController.setSetpoint(controlState.PLACE_LIFT.pos);
                 break;
-            case PICK_UP_LIFT:
-                pidController.setSetpoint(controlState.PICK_UP_LIFT.pos);
+            case PICK_UP_LIFT_FLOOR:
+                pidController.setSetpoint(controlState.PICK_UP_LIFT_FLOOR.pos);
                 break;
             case PICK_UP_LIFT_HIGH:
                 pidController.setSetpoint(controlState.PICK_UP_LIFT_HIGH.pos);
+                break;
+                case PICK_UP_LIFT:
+                pidController.setSetpoint(controlState.PICK_UP_LIFT.pos);
                 break;
             case RESET_LIFT:
                 pidController.setSetpoint(controlState.RESET_LIFT.pos);
@@ -223,6 +225,9 @@ public class ArmLiftIntake implements Subsystem {
         }
         else if (currentState == controlState.PLACE_LIFT) {
             pidController.setSetpoint(controlState.PLACE_LIFT.pos);
+        }
+        else if (currentState == controlState.PICK_UP_LIFT_FLOOR) {
+            pidController.setSetpoint(controlState.PICK_UP_LIFT_FLOOR.pos);
         }
         else if (currentState == controlState.PICK_UP_LIFT) {
             pidController.setSetpoint(controlState.PICK_UP_LIFT.pos);

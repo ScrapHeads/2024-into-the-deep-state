@@ -1,8 +1,7 @@
 package org.firstinspires.ftc.teamcode.Commands.Automation;
 
 import static org.firstinspires.ftc.teamcode.Subsystems.ArmRotateIntake.controlState.HANG_ROTATE;
-import static org.firstinspires.ftc.teamcode.Subsystems.ArmRotateIntake.controlState.PICK_UP_ROTATE;
-import static org.firstinspires.ftc.teamcode.Subsystems.ArmRotateIntake.controlState.PLACE_ROTATE;
+import static org.firstinspires.ftc.teamcode.Subsystems.ArmRotateIntake.controlState.PICK_UP_ROTATE_FLOOR;
 
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.arcrobotics.ftclib.command.WaitCommand;
@@ -15,7 +14,7 @@ public class AutoHang extends SequentialCommandGroup {
         addCommands(
                 new RotateArmIntake(rotation, 1, HANG_ROTATE),
                 new WaitCommand(1500),
-                new RotateArmIntake(rotation, 1, PICK_UP_ROTATE)
+                new RotateArmIntake(rotation, 1, PICK_UP_ROTATE_FLOOR)
         );
     }
 

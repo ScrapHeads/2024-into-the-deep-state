@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.Commands.Automation;
 
 import static org.firstinspires.ftc.teamcode.Constants.*;
 import static org.firstinspires.ftc.teamcode.Subsystems.ArmLiftIntake.controlState.RESET_LIFT;
+import static org.firstinspires.ftc.teamcode.Subsystems.ArmRotateIntake.controlState.PICK_UP_ROTATE;
 import static org.firstinspires.ftc.teamcode.Subsystems.ArmRotateIntake.controlState.PRE_PICK_UP_ROTATE;
 
 import com.arcrobotics.ftclib.command.ParallelCommandGroup;
@@ -23,9 +24,9 @@ public class ArmResetAfterPickUp extends SequentialCommandGroup {
         addCommands(
                 new ParallelCommandGroup(
                         new WristClawVert(wClawV, placeClawPos),
-                        new RotateArmIntake(rotation, 1, PRE_PICK_UP_ROTATE)
+                        new RotateArmIntake(rotation, 1, PICK_UP_ROTATE)
                 ),
-                new WaitUntilCommand(() -> rotation.isAtPosition(5)),
+//                new WaitUntilCommand(() -> rotation.isAtPosition(10)),
                 new liftArmIntake(lift, 1, RESET_LIFT),
                 new WaitUntilCommand(() -> lift.isAtPosition(3))
         );

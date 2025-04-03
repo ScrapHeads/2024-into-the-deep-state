@@ -191,19 +191,19 @@ public class MainTeleop extends CommandOpMode {
         new Trigger(() -> !isSlowMode)
                 .whileActiveOnce(new DriveContinous(drivetrain, driver, 1.0));
 
-        new Trigger(() -> isClawTouched)
-                .whileActiveOnce(new SequentialCommandGroup(
-                        new ArmResetAfterPickUp(armLiftIntake, armRotateIntake, claw, wClawV),
-                        new InstantCommand(() -> isSlowMode = false),
-                        new InstantCommand(() -> currentClawPickUpState = clawPickUpStates.PLACE),
-                        new InstantCommand(() -> isClawTouched = false)
-                        ));
+//        new Trigger(() -> isClawTouched)
+//                .whileActiveOnce(new SequentialCommandGroup(
+//                        new ArmResetAfterPickUp(armLiftIntake, armRotateIntake, claw, wClawV),
+//                        new InstantCommand(() -> isSlowMode = false),
+//                        new InstantCommand(() -> currentClawPickUpState = clawPickUpStates.PLACE),
+//                        new InstantCommand(() -> isClawTouched = false)
+//                        ));
 
         //Statements for in game functions controller one
 
         //Inputs for the armLiftIntake
         new Trigger(() -> driver.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.1)
-                .whenActive(new liftArmIntake(armLiftIntake, .5, MANUAL_REVERSE))
+                .whenActive(new liftArmIntake(armLiftIntake, .8, MANUAL_REVERSE))
                 .whenInactive(new liftArmIntake(armLiftIntake, 0, HOLD_LIFT));
 
         new Trigger(() -> driver.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.1)
@@ -275,28 +275,13 @@ public class MainTeleop extends CommandOpMode {
 
 
         driver.getGamepadButton(RIGHT_BUMPER)
-                .whenPressed(new InstantCommand(this::advancedPickUpStates));
-
-        new Trigger(() -> currentPickUpState == PickUpStates.STATE_ONE)
-                .whenActive(
-                        new RotateArmIntake(armRotateIntake, 1, PICK_UP_ROTATE)
-                )
-                .whileActiveOnce(new InstantCommand(() -> {isSlowMode = true;}));
-
-        new Trigger(() -> currentPickUpState == PickUpStates.STATE_TWO)
-                .whenActive(
+                .whenPressed(
                         new SequentialCommandGroup(
-                                new RotateArmIntake(armRotateIntake, 1, PICK_UP_ROTATE),
-                                new WaitUntilCommand(() -> armRotateIntake.isAtPosition(3)),
-                                new intakeClaw(claw, outtakeClawPower, outtakeClawPower2).withTimeout(0),
-                                new WristClawVert(wClawV, pickUpClawPos),
-                                new liftArmIntake(armLiftIntake, 1, PICK_UP_LIFT),
-                                new intakeClaw(claw, intakeClawPower, intakeClawPower2).andThen(
-                                        new ArmResetAfterPickUp(armLiftIntake, armRotateIntake, claw, wClawV),
-                                        new InstantCommand(() -> isSlowMode = false)
-                                )
-                        )
-                );
+                            new RotateArmIntake(armRotateIntake, 1, PICK_UP_ROTATE),
+                            new WaitUntilCommand(() -> armRotateIntake.isAtPosition(15)),
+                            new WristClawVert(wClawV, pickUpClawPos),
+                            new liftArmIntake(armLiftIntake, 1, PICK_UP_LIFT)
+                ));
 
         driver.getGamepadButton(BACK)
                 .whenPressed(
@@ -313,10 +298,18 @@ public class MainTeleop extends CommandOpMode {
 
         driver.getGamepadButton(A)
                 .whenPressed( new SequentialCommandGroup(
-                        new intakeClaw(claw, intakeClawPower, intakeClawPower2)
-//                        new InstantCommand(() -> isClawTouched = true),
-//                        new WristClawVert(wClawV, placeClawPos)
-                ))
+                        new intakeClaw(claw, intakeClawPower, intakeClawPower2),
+                        new ParallelCommandGroup(
+                                new WristClawVert(wClawV, placeClawPos).withTimeout(10),
+                                new RotateClawHorizontal(rClawH, centerClawPos).withTimeout(10),
+                                new RotateArmIntake(armRotateIntake, 1, PICK_UP_ROTATE)
+                        ),
+                        new WaitUntilCommand(() -> armRotateIntake.isAtPosition(10)),
+                        new liftArmIntake(armLiftIntake, 1, RESET_LIFT),
+                        new WaitUntilCommand(() -> armLiftIntake.isAtPosition(3)),
+                        new InstantCommand(() -> currentClawPickUpState = clawPickUpStates.PLACE)
+                        )
+                )
 //                .whenPressed(new RotateClaw(rClaw, pickUpClawPos))
                 .whenReleased(new intakeClaw(claw, 0, 0));
 
