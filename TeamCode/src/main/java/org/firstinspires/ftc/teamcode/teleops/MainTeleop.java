@@ -191,13 +191,14 @@ public class MainTeleop extends CommandOpMode {
         new Trigger(() -> !isSlowMode)
                 .whileActiveOnce(new DriveContinous(drivetrain, driver, 1.0));
 
-//        new Trigger(() -> isClawTouched)
-//                .whileActiveOnce(new SequentialCommandGroup(
-//                        new ArmResetAfterPickUp(armLiftIntake, armRotateIntake, claw, wClawV),
-//                        new InstantCommand(() -> isSlowMode = false),
-//                        new InstantCommand(() -> currentClawPickUpState = clawPickUpStates.PLACE),
-//                        new InstantCommand(() -> isClawTouched = false)
-//                        ));
+        new Trigger(() -> isClawTouched)
+                .whileActiveOnce(new SequentialCommandGroup(
+                        new ArmResetAfterPickUp(armLiftIntake, armRotateIntake, claw, wClawV),
+                        new InstantCommand(() -> isSlowMode = false),
+                        new InstantCommand(() -> currentClawPickUpState = clawPickUpStates.PLACE),
+                        new InstantCommand(() -> isClawTouched = false)
+                        ))
+        ;
 
         //Statements for in game functions controller one
 
@@ -299,15 +300,8 @@ public class MainTeleop extends CommandOpMode {
         driver.getGamepadButton(A)
                 .whenPressed( new SequentialCommandGroup(
                         new intakeClaw(claw, intakeClawPower, intakeClawPower2),
-                        new ParallelCommandGroup(
-                                new WristClawVert(wClawV, placeClawPos).withTimeout(10),
-                                new RotateClawHorizontal(rClawH, centerClawPos).withTimeout(10),
-                                new RotateArmIntake(armRotateIntake, 1, PICK_UP_ROTATE)
-                        ),
-                        new WaitUntilCommand(() -> armRotateIntake.isAtPosition(10)),
-                        new liftArmIntake(armLiftIntake, 1, RESET_LIFT),
-                        new WaitUntilCommand(() -> armLiftIntake.isAtPosition(3)),
-                        new InstantCommand(() -> currentClawPickUpState = clawPickUpStates.PLACE)
+                        new RotateClawHorizontal(rClawH, centerClawPos),
+                        new InstantCommand(() -> isClawTouched = true)
                         )
                 )
 //                .whenPressed(new RotateClaw(rClaw, pickUpClawPos))

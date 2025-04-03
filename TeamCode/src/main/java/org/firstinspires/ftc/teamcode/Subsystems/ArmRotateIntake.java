@@ -28,7 +28,7 @@ public class ArmRotateIntake implements Subsystem {
 
 
     //TODO Not Tuned; Tune
-    private final PIDController pidController = new PIDController(0.026, 0.005, 0.0001);
+    private final PIDController pidController = new PIDController(0.026, 0.01, 0.0001);
 
     private final PIDController pidControllerLiftRotIncrease = new PIDController(0.14, 0, 0);
 
@@ -38,7 +38,7 @@ public class ArmRotateIntake implements Subsystem {
 
 
     public enum controlState {
-        PLACE_ROTATE(-179),
+        PLACE_ROTATE(180),
         HANG_ROTATE(-178),
         HB_AFTER(165),
         PICK_UP_ROTATE_FLOOR(63),

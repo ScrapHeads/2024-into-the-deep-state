@@ -5,6 +5,7 @@ import static org.firstinspires.ftc.teamcode.Subsystems.ArmLiftIntake.controlSta
 import static org.firstinspires.ftc.teamcode.Subsystems.ArmRotateIntake.controlState.PICK_UP_ROTATE;
 import static org.firstinspires.ftc.teamcode.Subsystems.ArmRotateIntake.controlState.PRE_PICK_UP_ROTATE;
 
+import com.arcrobotics.ftclib.command.InstantCommand;
 import com.arcrobotics.ftclib.command.ParallelCommandGroup;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.arcrobotics.ftclib.command.WaitUntilCommand;
@@ -18,14 +19,15 @@ import org.firstinspires.ftc.teamcode.Subsystems.ArmRotateIntake;
 import org.firstinspires.ftc.teamcode.Subsystems.Claw;
 import org.firstinspires.ftc.teamcode.Subsystems.ClawRotateHorizontal;
 import org.firstinspires.ftc.teamcode.Subsystems.ClawWristVert;
+import org.firstinspires.ftc.teamcode.teleops.MainTeleop;
 
 public class ArmResetAfterPickUp extends SequentialCommandGroup {
     public ArmResetAfterPickUp(ArmLiftIntake lift, ArmRotateIntake rotation, Claw claw, ClawWristVert wClawV) {
         addCommands(
-                new ParallelCommandGroup(
-                        new WristClawVert(wClawV, placeClawPos),
-                        new RotateArmIntake(rotation, 1, PICK_UP_ROTATE)
-                ),
+            new ParallelCommandGroup(
+                new WristClawVert(wClawV, placeClawPos).withTimeout(10),
+                new RotateArmIntake(rotation, 1, PICK_UP_ROTATE)
+            ),
 //                new WaitUntilCommand(() -> rotation.isAtPosition(10)),
                 new liftArmIntake(lift, 1, RESET_LIFT),
                 new WaitUntilCommand(() -> lift.isAtPosition(3))
