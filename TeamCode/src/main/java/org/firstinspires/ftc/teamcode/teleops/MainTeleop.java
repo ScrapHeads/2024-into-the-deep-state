@@ -205,7 +205,12 @@ public class MainTeleop extends CommandOpMode {
                     )
                 );
 
-        //Statements for in game functions controller one
+        //Controller two
+        driver2.getGamepadButton(A)
+                .whenPressed(new InstantCommand(this::whatController)
+                );
+
+        //Controller one
 
         //Inputs for the armLiftIntake
         new Trigger(() -> driver.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.1)
@@ -265,10 +270,6 @@ public class MainTeleop extends CommandOpMode {
                                 new ClipStageTwoTele(armLiftIntake, armRotateIntake, claw, wClawV, rClawH)
                         )
                 );
-
-        driver2.getGamepadButton(A)
-                        .whenPressed(new InstantCommand(this::whatController)
-                        );
 
         //Inputs for the armRotateIntake
         driver.getGamepadButton(DPAD_LEFT)
