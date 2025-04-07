@@ -25,12 +25,12 @@ public class ArmResetAfterPickUp extends SequentialCommandGroup {
     public ArmResetAfterPickUp(ArmLiftIntake lift, ArmRotateIntake rotation, Claw claw, ClawWristVert wClawV) {
         addCommands(
             new ParallelCommandGroup(
-                new WristClawVert(wClawV, placeClawPos).withTimeout(10),
-                new RotateArmIntake(rotation, 1, PICK_UP_ROTATE)
-            ),
+                    new RotateArmIntake(rotation, 1, PICK_UP_ROTATE),
+                    new liftArmIntake(lift, 1, RESET_LIFT)
+//                    new WristClawVert(wClawV, placeClawPos)
+                )
 //                new WaitUntilCommand(() -> rotation.isAtPosition(10)),
-                new liftArmIntake(lift, 1, RESET_LIFT),
-                new WaitUntilCommand(() -> lift.isAtPosition(3))
+//                new WaitUntilCommand(() -> lift.isAtPosition(3))
         );
     }
 }

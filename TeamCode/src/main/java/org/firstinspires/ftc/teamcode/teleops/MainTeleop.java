@@ -107,7 +107,7 @@ public class MainTeleop extends CommandOpMode {
 
     private PickUpStates currentPickUpState = PickUpStates.STATE_TWO;
 
-    private ClipperStates currentClipperStates = ClipperStates.STATE_TWO;
+    private ClipperStates currentClipperStates = ClipperStates.STATE_THREE;
 
     private controllerStates currentController = controllerStates.CONTROLLER_ONE;
 
@@ -341,8 +341,7 @@ public class MainTeleop extends CommandOpMode {
 
         driver.getGamepadButton(A)
                 .whenPressed( new SequentialCommandGroup(
-                        new intakeClaw(claw, intakeClawPower, intakeClawPower2)
-                                .andThen(
+                        new intakeClaw(claw, intakeClawPower, intakeClawPower2).andThen(
                                         new InstantCommand(() -> isClawTouched = true)
                                 )
                         )
@@ -373,14 +372,14 @@ public class MainTeleop extends CommandOpMode {
 
     private void advancedClipperStates() {
         switch(currentClipperStates) {
-            case STATE_ONE:
-                currentClipperStates = ClipperStates.STATE_TWO;
-                break;
+//            case STATE_ONE:
+//                currentClipperStates = ClipperStates.STATE_TWO;
+//                break;
             case STATE_TWO:
                 currentClipperStates = ClipperStates.STATE_THREE;
                 break;
             case STATE_THREE:
-                currentClipperStates = ClipperStates.STATE_ONE;
+                currentClipperStates = ClipperStates.STATE_TWO;
                 break;
         };
     }

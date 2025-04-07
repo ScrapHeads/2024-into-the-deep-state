@@ -28,7 +28,7 @@ public class ArmRotateIntake implements Subsystem {
 
 
     //TODO Not Tuned; Tune
-    private final PIDController pidController = new PIDController(0.026, 0.01, 0.0001);
+    private final PIDController pidController = new PIDController(0.026, 0.001, 0.0001);
 
     private final PIDController pidControllerLiftRotIncrease = new PIDController(0.14, 0, 0);
 
@@ -47,6 +47,8 @@ public class ArmRotateIntake implements Subsystem {
         MANUAL_ROTATE_REVERSE(-11),
         SWAP_STATES_ROTATE(-55),
         PRE_PICK_UP_ROTATE(75),
+        PRE_PICK_UP_THIRD_BLOCK_AUTO(89),
+        PICK_UP_THIRD_BLOCK_AUTO(76),
         HOLD_ROTATE(15),
         INCREASE_ROTATE(56);
 
@@ -85,7 +87,7 @@ public class ArmRotateIntake implements Subsystem {
         armRotateIntake.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
         armRotateIntake2.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
 
-        pidController.setTolerance(.5);
+        pidController.setTolerance(.3);
         pidController.enableContinuousInput(-180, 180);
         pidController.reset();
 
@@ -162,6 +164,12 @@ public class ArmRotateIntake implements Subsystem {
             case HB_AFTER:
                 pidController.setSetpoint(controlState.HB_AFTER.pos);
                 break;
+            case PRE_PICK_UP_THIRD_BLOCK_AUTO:
+                pidController.setSetpoint(controlState.PRE_PICK_UP_THIRD_BLOCK_AUTO.pos);
+                break;
+            case PICK_UP_THIRD_BLOCK_AUTO:
+                pidController.setSetpoint(controlState.PICK_UP_THIRD_BLOCK_AUTO.pos);
+                break;
             case HOLD_ROTATE:
                 resetIncrease = true;
                 pidController.setSetpoint(savedPosition);
@@ -235,6 +243,12 @@ public class ArmRotateIntake implements Subsystem {
         }
         else if (currentState == controlState.HANG_ROTATE) {
             pickUpPidController.setGoal(controlState.HANG_ROTATE.pos);
+        }
+        else if (currentState == controlState.PRE_PICK_UP_THIRD_BLOCK_AUTO) {
+            pidController.setSetpoint(controlState.PRE_PICK_UP_THIRD_BLOCK_AUTO.pos);
+        }
+        else if (currentState == controlState.PICK_UP_THIRD_BLOCK_AUTO) {
+            pidController.setSetpoint(controlState.PICK_UP_THIRD_BLOCK_AUTO.pos);
         }
         else {
             armRotateIntake.set(0);

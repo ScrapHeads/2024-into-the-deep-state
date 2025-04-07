@@ -7,6 +7,7 @@ import static org.firstinspires.ftc.teamcode.Constants.intakeClawPower2;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.arcrobotics.ftclib.command.CommandBase;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.Subsystems.Claw;
 
 public class intakeClaw extends CommandBase {
@@ -42,7 +43,10 @@ public class intakeClaw extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        return pos >= intakeClawPower && pos2 <= intakeClawPower2 && claw.getTouchSensor();
+        TelemetryPacket packet = new TelemetryPacket();
+        packet.put("is Finished?", true);
+        dashboard.sendTelemetryPacket(packet);
+        return pos == intakeClawPower && pos2 == intakeClawPower2 && claw.getTouchSensor();
 //        return (pos >= intakeClawPower && pos2 <= intakeClawPower2 && claw.getTouchSensor()) || (pos == 0 && pos2 == 0);
 //        return true;
     }

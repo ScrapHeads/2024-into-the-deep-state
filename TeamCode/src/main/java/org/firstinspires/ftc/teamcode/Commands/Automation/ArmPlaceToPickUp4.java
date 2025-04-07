@@ -21,12 +21,13 @@ import org.firstinspires.ftc.teamcode.Subsystems.ClawWristVert;
 public class ArmPlaceToPickUp4 extends SequentialCommandGroup {
     public ArmPlaceToPickUp4(ArmLiftIntake lift, ArmRotateIntake rotation, Claw claw, ClawWristVert wClawV) {
         addCommands(
-                new WristClawVert(wClawV, pickUpHighClawPos).withTimeout(100),
-                new WaitCommand(500),
+                new WristClawVert(wClawV, pickUpClawPos).withTimeout(100),
+                new WaitCommand(600),
                 new liftArmIntake(lift, 1, RESET_LIFT),
                 new WaitUntilCommand(() -> lift.isAtPosition(4)),
-                new RotateArmIntake(rotation, 1, PICK_UP_ROTATE_FLOOR),
-                new WristClawVert(wClawV, placeClawPos)
+                new WristClawVert(wClawV, placeClawPos),
+                new WaitCommand(300),
+                new RotateArmIntake(rotation, 1, PICK_UP_ROTATE_FLOOR)
         );
     }
 }
