@@ -272,10 +272,10 @@ public class MainTeleop extends CommandOpMode {
                 );
 
         //Inputs for the armRotateIntake
-        driver.getGamepadButton(DPAD_LEFT)
+        driver.getGamepadButton(DPAD_UP)
                 .whenPressed(new RotateArmIntake(armRotateIntake, 0.75, MANUAL_ROTATE))
                 .whenReleased(new RotateArmIntake(armRotateIntake, 0, HOLD_ROTATE));
-        driver.getGamepadButton(DPAD_RIGHT)
+        driver.getGamepadButton(DPAD_DOWN)
                 .whenPressed(new RotateArmIntake(armRotateIntake, -0.5, MANUAL_ROTATE_REVERSE))
                 .whenReleased(new RotateArmIntake(armRotateIntake, 0, HOLD_ROTATE));
 
