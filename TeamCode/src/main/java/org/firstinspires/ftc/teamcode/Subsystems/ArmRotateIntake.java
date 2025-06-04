@@ -47,7 +47,7 @@ public class ArmRotateIntake implements Subsystem {
         MANUAL_ROTATE_REVERSE(-11),
         SWAP_STATES_ROTATE(-55),
         PRE_PICK_UP_ROTATE(75),
-        PRE_PICK_UP_THIRD_BLOCK_AUTO(89),
+        PRE_PICK_UP_THIRD_BLOCK_AUTO(94),
         PICK_UP_THIRD_BLOCK_AUTO(76),
         HOLD_ROTATE(15),
         INCREASE_ROTATE(56);

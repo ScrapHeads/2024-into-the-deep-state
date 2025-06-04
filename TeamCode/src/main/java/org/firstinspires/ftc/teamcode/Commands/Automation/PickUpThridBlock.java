@@ -34,15 +34,14 @@ public class PickUpThridBlock extends SequentialCommandGroup {
                         new WristClawVert(wClawV, pickUpClawPos),
                         new RotateClawHorizontal(rClawH, rightClawPos90)
                         ),
+
                 new WaitCommand(500),
 
                 new liftArmIntake(lift, 1, PICK_UP_THIRD_BLOCK_AUTO_LIFT),
 
                 new ParallelCommandGroup(
-                        new intakeClaw(claw, intakeClawPower, intakeClawPower2).withTimeout(700),
-                        new WaitCommand(100).andThen(
-                                new RotateArmIntake(rotation, 1, PICK_UP_THIRD_BLOCK_AUTO)
-                        )
+                            new RotateArmIntake(rotation, 1, PICK_UP_THIRD_BLOCK_AUTO),
+                            new intakeClaw(claw, intakeClawPower, intakeClawPower2).withTimeout(1000)
                 ),
 
                 new ParallelCommandGroup(

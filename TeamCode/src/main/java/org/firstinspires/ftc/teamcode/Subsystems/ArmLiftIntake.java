@@ -33,8 +33,8 @@ public class ArmLiftIntake implements Subsystem {
 
     public enum controlState {
         PLACE_LIFT(22),
-        PICK_UP_LIFT_FLOOR(6),
-        PICK_UP_LIFT_FLOOR_IDK_ANYMORE(5.6),
+        PICK_UP_LIFT_FLOOR(5.2),
+        PICK_UP_LIFT_FLOOR_IDK_ANYMORE(5.2),
         PICK_UP_LIFT_FLOOR_LOW(6.5),
         PICK_UP_LIFT(11),
         PICK_UP_LIFT_HIGH(4.75),

@@ -24,7 +24,7 @@ public class ArmPlaceToPickUp3 extends SequentialCommandGroup {
                 new WristClawVert(wClawV, pickUpClawPos),
                 new WaitCommand(200),
                 new liftArmIntake(lift, 1, RESET_LIFT),
-                new WaitUntilCommand(() -> lift.isAtPosition(4)),
+                new WaitUntilCommand(() -> lift.isAtPosition(2)),
                 new RotateArmIntake(rotation, 1, PICK_UP_ROTATE_FLOOR),
                 new WristClawVert(wClawV, placeClawPos),
                 new WaitCommand(300)

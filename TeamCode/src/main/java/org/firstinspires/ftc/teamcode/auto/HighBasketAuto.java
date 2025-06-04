@@ -122,9 +122,9 @@ public class HighBasketAuto extends CommandOpMode {
 //                .splineToLinearHeading(new Pose2d(16, 24, Math.toRadians(-45)), Math.toRadians(0));
 
         TrajectoryActionBuilder placeStartSample = drivetrain.actionBuilder(new Pose2d(0, 0, Math.toRadians(0)), turnConstraintsSlow, velConstraintSlow, accelConstraintSlow)
-                .strafeToLinearHeading(new Vector2d(16, 21), Math.toRadians(-47));
+                .strafeToLinearHeading(new Vector2d(18, 21), Math.toRadians(-47));
 
-        TrajectoryActionBuilder pickUpPreFirstBlock = drivetrain.actionBuilder(new Pose2d(16, 21, Math.toRadians(-47)), turnConstraintsSlow, velConstraintSlow, accelConstraintSlow)
+        TrajectoryActionBuilder pickUpPreFirstBlock = drivetrain.actionBuilder(new Pose2d(18, 21, Math.toRadians(-47)), turnConstraintsSlow, velConstraintSlow, accelConstraintSlow)
                 .strafeToLinearHeading(new Vector2d(9, 9.5), Math.toRadians(0));
 
         TrajectoryActionBuilder pickUpFirstBlock = drivetrain.actionBuilder(new Pose2d(9, 9.5, Math.toRadians(0)))
